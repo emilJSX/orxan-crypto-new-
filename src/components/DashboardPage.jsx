@@ -9,7 +9,7 @@ import {
 
 // --- Sabitlər və Hədəflər ---
 const SIMULATION_DURATION = 24 * 60 * 60 * 1000; // 24 saat (ms)
-const INITIAL_BALANCE = 26592.24;
+const INITIAL_BALANCE = 0.00;
 const TARGET_PROFIT = 6527.62;
 const MAX_BALANCE = INITIAL_BALANCE + TARGET_PROFIT;
 
@@ -629,11 +629,14 @@ export default function App() {
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
             <TimerCard accumulatedTime={accumulatedTime} lastStartedAt={lastStartedAt} isRunning={isRunning} isTargetReached={isTargetReached} />
 
-            <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 flex-1 md:flex-none">
+            <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 flex-1 md:flex-none flex flex-col justify-center">
               <p className="text-[10px] text-gray-500 uppercase tracking-wider">Cari Balans</p>
               <p className="text-lg font-mono font-bold text-white">{formatMoney(balance)}</p>
+              <p className="text-[9px] text-red-400 mt-0.5 flex items-center gap-1">
+                <AlertTriangle size={9} /> Ticarət üçün depozit lazımdır
+              </p>
             </div>
-            <div className="bg-emerald-900/20 border border-emerald-500/20 rounded-xl px-4 py-2 flex-1 md:flex-none">
+            <div className="bg-emerald-900/20 border border-emerald-500/20 rounded-xl px-4 py-2 flex-1 md:flex-none flex flex-col justify-center">
               <p className="text-[10px] text-emerald-400/80 uppercase tracking-wider">Ümumi Qazanc</p>
               <p className="text-lg font-mono font-bold text-emerald-400">+{formatMoney(totalProfit)}</p>
             </div>
@@ -972,7 +975,7 @@ export default function App() {
                  <AlertTriangle size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Sistemi Sıfırla?</h3>
-              <p className="text-sm text-gray-400 mb-6">Bütün mövcud qazanc, statistika, taymer və tarixçə qalıcı olaraq silinəcək və balans başlanğıc vəziyyətinə (26,592.24 USDT) qayıdacaq. Davam etmək istəyirsiniz?</p>
+              <p className="text-sm text-gray-400 mb-6">Bütün mövcud qazanc, statistika, taymer və tarixçə qalıcı olaraq silinəcək və balans başlanğıc vəziyyətinə (0.00 USDT) qayıdacaq. Davam etmək istəyirsiniz?</p>
               <div className="flex gap-3">
                  <button onClick={() => setResetModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:bg-white/5 transition-all">Ləğv et</button>
                  <button onClick={resetSystem} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]">Bəli, Sıfırla</button>
