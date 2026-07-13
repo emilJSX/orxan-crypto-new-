@@ -9,8 +9,8 @@ import {
 
 // --- Sabitlər və Hədəflər ---
 const SIMULATION_DURATION = 24 * 60 * 60 * 1000; // 24 saat (ms)
-const INITIAL_BALANCE = 30000.00;
-const TARGET_PROFIT = 29766.00;
+const INITIAL_BALANCE = 50000.00;
+const TARGET_PROFIT = 49627.00;
 const MAX_BALANCE = INITIAL_BALANCE + TARGET_PROFIT;
 
 const ASSETS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'AVAX', 'LINK', 'DOT', 'TRX'];
@@ -258,7 +258,7 @@ export default function App() {
   // --- LOCALSTORAGE PERSISTENCE ---
   useEffect(() => {
     if (!isInitialized.current) {
-      const savedData = localStorage.getItem('quantumArbState_v3');
+      const savedData = localStorage.getItem('quantumArbState_v4');
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData, (key, value) => {
@@ -308,7 +308,7 @@ export default function App() {
           accumulatedTime, lastStartedAt, isRunning, isTargetReached,
           totalProfit, history, stats, logs
        };
-       localStorage.setItem('quantumArbState_v3', JSON.stringify(stateToSave));
+       localStorage.setItem('quantumArbState_v4', JSON.stringify(stateToSave));
     }
   }, [accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit, history, stats, logs]);
 
@@ -320,7 +320,7 @@ export default function App() {
     setAccumulatedTime(SIMULATION_DURATION);
     setLastStartedAt(null);
     setTotalProfit(TARGET_PROFIT);
-    addLog(`24 SAATLIQ HƏDƏF TAMAMLANDI — Ümumi qazanc: 29,766.00 USDT | Yekun balans: 59,766.00 USDT`, 'warning');
+    addLog(`24 SAATLIQ HƏDƏF TAMAMLANDI — Ümumi qazanc: 49,627.00 USDT | Yekun balans: 99,627.00 USDT`, 'warning');
   }, [addLog]);
 
   // --- VAxt NƏZARƏTÇİSİ (Hər Saniyə) ---
@@ -551,7 +551,7 @@ export default function App() {
   };
 
   const resetSystem = () => {
-     localStorage.removeItem('quantumArbState_v3');
+     localStorage.removeItem('quantumArbState_v4');
      setAccumulatedTime(0);
      setLastStartedAt(Date.now());
      setIsRunning(true);
@@ -972,7 +972,7 @@ export default function App() {
                  <AlertTriangle size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Sistemi Sıfırla?</h3>
-              <p className="text-sm text-gray-400 mb-6">Bütün mövcud qazanc, statistika, taymer və tarixçə qalıcı olaraq silinəcək və balans başlanğıc vəziyyətinə (30,000.00 USDT) qayıdacaq. Davam etmək istəyirsiniz?</p>
+              <p className="text-sm text-gray-400 mb-6">Bütün mövcud qazanc, statistika, taymer və tarixçə qalıcı olaraq silinəcək və balans başlanğıc vəziyyətinə (50,000.00 USDT) qayıdacaq. Davam etmək istəyirsiniz?</p>
               <div className="flex gap-3">
                  <button onClick={() => setResetModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:bg-white/5 transition-all">Ləğv et</button>
                  <button onClick={resetSystem} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]">Bəli, Sıfırla</button>
