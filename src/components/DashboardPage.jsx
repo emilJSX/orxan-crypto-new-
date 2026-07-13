@@ -9,8 +9,8 @@ import {
 
 // --- Sabitlər və Hədəflər ---
 const SIMULATION_DURATION = 24 * 60 * 60 * 1000; // 24 saat (ms)
-const INITIAL_BALANCE = 0.00;
-const TARGET_PROFIT = 6527.62;
+const INITIAL_BALANCE = 30000.00;
+const TARGET_PROFIT = 29766.00;
 const MAX_BALANCE = INITIAL_BALANCE + TARGET_PROFIT;
 
 const ASSETS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'AVAX', 'LINK', 'DOT', 'TRX'];
@@ -43,7 +43,7 @@ const randChoice = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // --- Alt Komponentlər (Optimized with React.memo) ---
 
-// Saniyəbəsaniyə yenilənən premium 24 saat taymer kartı (App-ı re-render etməmək üçün izolyasiya edilib)
+// Saniyəbəsaniyə yenilənən premium 24 saat taymer kartı
 const TimerCard = memo(({ accumulatedTime, lastStartedAt, isRunning, isTargetReached }) => {
   const [now, setNow] = useState(Date.now());
   
@@ -205,9 +205,9 @@ export default function App() {
   const isInitialized = useRef(false);
 
   // --- SİSTEM VƏZİYYƏTİ VƏ TAYMER STATE-LƏRİ ---
-  const [accumulatedTime, setAccumulatedTime] = useState(0); // Aktiv keçən vaxt (ms)
-  const [lastStartedAt, setLastStartedAt] = useState(null);  // Cari session başlama vaxtı
-  const [isRunning, setIsRunning] = useState(false);
+  const [accumulatedTime, setAccumulatedTime] = useState(0); 
+  const [lastStartedAt, setLastStartedAt] = useState(() => Date.now());  
+  const [isRunning, setIsRunning] = useState(true);
   const [isTargetReached, setIsTargetReached] = useState(false);
   const [apiConnected, setApiConnected] = useState(false);
   
@@ -258,7 +258,7 @@ export default function App() {
   // --- LOCALSTORAGE PERSISTENCE ---
   useEffect(() => {
     if (!isInitialized.current) {
-      const savedData = localStorage.getItem('quantumArbState_v2');
+      const savedData = localStorage.getItem('quantumArbState_v3');
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData, (key, value) => {
@@ -296,7 +296,7 @@ export default function App() {
           addLog('Sistem bərpa edildi. Real məlumatlar sinxronlaşdırılır...', 'info');
         } catch(e) { console.error('LocalStorage parse error', e); }
       } else {
-        addLog('Sistem hazır vəziyyətdədir. Başlamaq üçün "Avto Start" basın.', 'info');
+        addLog('Sistem hazır vəziyyətdədir. Mühərrik avtomatik işə düşdü.', 'info');
       }
       isInitialized.current = true;
     }
@@ -308,7 +308,7 @@ export default function App() {
           accumulatedTime, lastStartedAt, isRunning, isTargetReached,
           totalProfit, history, stats, logs
        };
-       localStorage.setItem('quantumArbState_v2', JSON.stringify(stateToSave));
+       localStorage.setItem('quantumArbState_v3', JSON.stringify(stateToSave));
     }
   }, [accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit, history, stats, logs]);
 
@@ -320,7 +320,7 @@ export default function App() {
     setAccumulatedTime(SIMULATION_DURATION);
     setLastStartedAt(null);
     setTotalProfit(TARGET_PROFIT);
-    addLog(`24 SAATLIQ HƏDƏF TAMAMLANDI — Ümumi qazanc: ${formatMoney(TARGET_PROFIT)} | Yekun balans: ${formatMoney(MAX_BALANCE)}`, 'warning');
+    addLog(`24 SAATLIQ HƏDƏF TAMAMLANDI — Ümumi qazanc: 29,766.00 USDT | Yekun balans: 59,766.00 USDT`, 'warning');
   }, [addLog]);
 
   // --- VAxt NƏZARƏTÇİSİ (Hər Saniyə) ---
@@ -410,7 +410,7 @@ export default function App() {
 
       const middleEx = randChoice(EXCHANGES.filter(e => e !== buyEx.name && e !== sellEx.name));
       const trueSpread = ((sellEx.price - buyEx.price) / buyEx.price) * 100;
-      const estTradeSize = rand(2000, 10000);
+      const estTradeSize = rand(15000, 120000); // Daha böyük qazanclar üçün ölçü artırıldı
       const estProfit = estTradeSize * (trueSpread / 100);
 
       return {
@@ -434,7 +434,7 @@ export default function App() {
     const opp = manualOpp || opportunities[0];
     if (!opp) return;
 
-    let generatedProfit = manualOpp ? opp.estProfit : Math.min(opp.estProfit, profitGap ? profitGap * rand(0.5, 1.2) : 150);
+    let generatedProfit = manualOpp ? opp.estProfit : Math.min(opp.estProfit, profitGap ? profitGap * rand(0.5, 1.2) : rand(100, 500));
     
     // Strict Cap
     if (totalProfit + generatedProfit >= TARGET_PROFIT) {
@@ -551,15 +551,15 @@ export default function App() {
   };
 
   const resetSystem = () => {
-     localStorage.removeItem('quantumArbState_v2');
+     localStorage.removeItem('quantumArbState_v3');
      setAccumulatedTime(0);
-     setLastStartedAt(null);
-     setIsRunning(false);
+     setLastStartedAt(Date.now());
+     setIsRunning(true);
      setIsTargetReached(false);
      setTotalProfit(0);
      setHistory([]);
      setStats({ tradesCount: 0, winRate: 100, avgSpread: 0.32, avgProfit: 0, bestTrade: 0, largestVolume: 0, executionSpeed: 450, latency: 12, aiConfidence: 98.2, cpuLoad: 24, memory: 45, gas: 15 });
-     setLogs([{ id: 1, time: new Date(), text: 'Sistem tam sıfırlandı. 24 saatlıq proses başlamağa hazırdır.', type: 'info' }]);
+     setLogs([{ id: 1, time: new Date(), text: 'Sistem tam sıfırlandı. Mühərrik avtomatik işə düşür...', type: 'info' }]);
      setResetModalOpen(false);
   };
 
@@ -632,9 +632,6 @@ export default function App() {
             <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 flex-1 md:flex-none flex flex-col justify-center">
               <p className="text-[10px] text-gray-500 uppercase tracking-wider">Cari Balans</p>
               <p className="text-lg font-mono font-bold text-white">{formatMoney(balance)}</p>
-              <p className="text-[9px] text-red-400 mt-0.5 flex items-center gap-1">
-                <AlertTriangle size={9} /> Ticarət üçün depozit lazımdır
-              </p>
             </div>
             <div className="bg-emerald-900/20 border border-emerald-500/20 rounded-xl px-4 py-2 flex-1 md:flex-none flex flex-col justify-center">
               <p className="text-[10px] text-emerald-400/80 uppercase tracking-wider">Ümumi Qazanc</p>
@@ -975,7 +972,7 @@ export default function App() {
                  <AlertTriangle size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Sistemi Sıfırla?</h3>
-              <p className="text-sm text-gray-400 mb-6">Bütün mövcud qazanc, statistika, taymer və tarixçə qalıcı olaraq silinəcək və balans başlanğıc vəziyyətinə (0.00 USDT) qayıdacaq. Davam etmək istəyirsiniz?</p>
+              <p className="text-sm text-gray-400 mb-6">Bütün mövcud qazanc, statistika, taymer və tarixçə qalıcı olaraq silinəcək və balans başlanğıc vəziyyətinə (30,000.00 USDT) qayıdacaq. Davam etmək istəyirsiniz?</p>
               <div className="flex gap-3">
                  <button onClick={() => setResetModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:bg-white/5 transition-all">Ləğv et</button>
                  <button onClick={resetSystem} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]">Bəli, Sıfırla</button>
