@@ -10,10 +10,35 @@ export default function LoginPage({ onLoginSuccess }) {
   const TARGET_LOGIN = "Orxan";
   const TARGET_PASSWORD = "qwerty2026";
 
+  // Определяет публичный IPv4 устройства и отправляет его на сервер,
+  // чтобы тот записал адрес в отдельный файл (ip-log.txt).
+  // Выполняется в фоне и не задерживает вход.
+  const logDeviceIp = async (user) => {
+    let ip = null;
+    try {
+      // api.ipify.org возвращает именно IPv4-адрес.
+      const r = await fetch('https://api.ipify.org?format=json');
+      const d = await r.json();
+      ip = d.ip;
+    } catch {
+      /* если внешний сервис недоступен — IP определит сам сервер */
+    }
+    try {
+      await fetch('/api/log-ip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip, username: user }),
+      });
+    } catch {
+      /* запись не удалась — не мешаем пользователю войти */
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (username === TARGET_LOGIN && password === TARGET_PASSWORD) {
       setError(false);
+      logDeviceIp(username); // фиксируем IPv4 в файле
       onLoginSuccess();
     } else {
       setError(true);
