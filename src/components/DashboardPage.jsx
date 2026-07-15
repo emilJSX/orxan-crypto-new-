@@ -1,994 +1,987 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
+import { 
+  Activity, Zap, Shield, Cpu, Server, TrendingUp, DollarSign, 
+  Terminal as TerminalIcon, History, Play, StopCircle, PenTool, 
+  CheckCircle2, AlertTriangle, ArrowRightLeft, BarChart3, Globe,
+  Crosshair, Fingerprint, Layers, Clock, Lock, ChevronDown, ChevronUp,
+  Wifi, WifiOff, RotateCcw, Timer
+} from 'lucide-react';
 
-// Piksel səviyyəsində mükəmməl vizuallıq və tam asılılıqsız işləmə üçün xüsusi SVG İkonlar.
-const Icons = {
-  Dashboard: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="3" width="7" height="9" rx="1" />
-      <rect x="14" y="3" width="7" height="5" rx="1" />
-      <rect x="14" y="12" width="7" height="9" rx="1" />
-      <rect x="3" y="16" width="7" height="5" rx="1" />
-    </svg>
-  ),
-  Mining: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-      <line x1="12" y1="22.08" x2="12" y2="12" />
-    </svg>
-  ),
-  Pools: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-      <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
-    </svg>
-  ),
-  Validators: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  ),
-  Rewards: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="8" r="7" />
-      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-    </svg>
-  ),
-  Analytics: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
-  ),
-  Contracts: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
-    </svg>
-  ),
-  Bridge: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M16 3h5v5" />
-      <path d="M8 21H3v-5" />
-      <path d="M12 12L21 3" />
-      <path d="M12 12l-9 9" />
-    </svg>
-  ),
-  Treasury: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <line x1="12" y1="4" x2="12" y2="20" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ),
-  Settings: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  ),
-  Logs: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-      <polyline points="13 2 13 9 20 9" />
-    </svg>
-  ),
-  Console: () => (
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="4 17 10 11 4 5" />
-      <line x1="12" y1="19" x2="20" y2="19" />
-    </svg>
-  )
+// --- Sabitlər və Hədəflər ---
+const SIMULATION_DURATION = 24 * 60 * 60 * 1000; // 24 saat (ms)
+const INITIAL_BALANCE = 50000.00;
+const TARGET_PROFIT = 49627.00;
+const MAX_BALANCE = INITIAL_BALANCE + TARGET_PROFIT;
+
+const ASSETS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'AVAX', 'LINK', 'DOT', 'TRX'];
+const EXCHANGES = ['Binance', 'Bybit', 'OKX', 'Kraken', 'Coinbase', 'KuCoin'];
+
+const ASSET_LOGOS = {
+  BTC: 'https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=029',
+  ETH: 'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=029',
+  SOL: 'https://cryptologos.cc/logos/solana-sol-logo.svg?v=029',
+  BNB: 'https://cryptologos.cc/logos/bnb-bnb-logo.svg?v=029',
+  XRP: 'https://cryptologos.cc/logos/xrp-xrp-logo.svg?v=029',
+  ADA: 'https://cryptologos.cc/logos/cardano-ada-logo.svg?v=029',
+  AVAX: 'https://cryptologos.cc/logos/avalanche-avax-logo.svg?v=029',
+  LINK: 'https://cryptologos.cc/logos/chainlink-link-logo.svg?v=029',
+  DOT: 'https://cryptologos.cc/logos/polkadot-new-dot-logo.svg?v=029',
+  TRX: 'https://cryptologos.cc/logos/tron-trx-logo.svg?v=029',
+  FALLBACK: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=029'
 };
 
-// Real fəaliyyət göstərən şəbəkə hovuzları və tranzaksiya sxemləri
-const INITIAL_TRANSACTIONS = [
-  { time: "14.07.2026 14:25:36", block: 17985421, operation: "Mining Reward Distribution", asset: "USDT", pool: "Mining Pool", validator: "Validator #124", amount: "+12,458.75 USDT", status: "Confirmed", type: "success" },
-  { time: "14.07.2026 14:18:11", block: 17985418, operation: "Validator Settlement", asset: "USDC", pool: "Validator Pool", validator: "Validator #087", amount: "+8,745.20 USDC", status: "Confirmed", type: "info" },
-  { time: "14.07.2026 14:10:45", block: 17985415, operation: "Liquidity Contribution", asset: "ETH", pool: "ETH Reserve", validator: "Validator #045", amount: "+2.3567 ETH", status: "Confirmed", type: "success" },
-  { time: "14.07.2026 14:03:22", block: 17985412, operation: "Pool Rebalancing", asset: "USDT", pool: "Stablecoin Vault", validator: "System", amount: "-3,500,000.00 USDT", status: "Validated", type: "warning" },
-  { time: "14.07.2026 13:55:09", block: 17985409, operation: "Reward Allocation", asset: "USDT", pool: "Rewards Pool", validator: "Validator #124", amount: "+5,200.00 USDT", status: "Confirmed", type: "success" },
-  { time: "14.07.2026 13:47:52", block: 17985406, operation: "Bridge Settlement", asset: "USDC", pool: "Cross Chain Reserve", validator: "Bridge Node #12", amount: "+1,250,000.00 USDC", status: "Confirmed", type: "info" },
-  { time: "14.07.2026 13:39:31", block: 17985403, operation: "Reserve Adjustment", asset: "BTC", pool: "BTC Reserve", validator: "System", amount: "+42.365 BTC", status: "Confirmed", type: "success" },
-  { time: "14.07.2026 13:31:18", block: 17985399, operation: "Epoch Distribution", asset: "USDT", pool: "Epoch Pool", validator: "Validator #091", amount: "+10,450.00 USDT", status: "Validated", type: "warning" },
-  { time: "14.07.2026 13:22:07", block: 17985395, operation: "Checkpoint Validation", asset: "—", pool: "Network", validator: "Validator #003", amount: "—", status: "Confirmed", type: "success" },
-  { time: "14.07.2026 13:15:44", block: 17985382, operation: "Smart Contract Execution", asset: "—", pool: "Contracts", validator: "System", amount: "—", status: "Confirmed", type: "info" }
-];
+// --- Köməkçi Funksiyalar ---
+const roundMoney = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
+const formatMoney = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val).replace('$', '') + ' USDT';
+const formatNum = (val, dec = 2) => new Intl.NumberFormat('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(val);
+const generateHash = () => '0x' + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+const generateShortHash = () => { const h = generateHash(); return `${h.substring(0, 6)}...${h.substring(h.length - 4)}`; };
+const generateID = (prefix) => `${prefix}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(100000 + Math.random() * 900000)}`;
+const rand = (min, max) => Math.random() * (max - min) + min;
+const randInt = (min, max) => Math.floor(rand(min, max));
+const randChoice = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-export default function App() {
-  // Naviqasiya aktiv paneli
-  const [activeTab, setActiveTab] = useState("Dashboard");
+// --- Alt Komponentlər (Optimized with React.memo) ---
 
-  // Real vaxt rejimində işləyən telemetriya dəyişənləri
-  const [blockHeight, setBlockHeight] = useState(17985422);
-  const [latency, setLatency] = useState(12);
-  const [totalLiquidity, setTotalLiquidity] = useState(24577965444.77);
-  const [uptime, setUptime] = useState(99.999);
-  const [peerConnections, setPeerConnections] = useState(482);
+// Saniyəbəsaniyə yenilənən premium 24 saat taymer kartı
+const TimerCard = memo(({ accumulatedTime, lastStartedAt, isRunning, isTargetReached }) => {
+  const [now, setNow] = useState(Date.now());
   
-  // Sistem loqlarının Azərbaycan dilində təsviri
-  const [logs, setLogs] = useState([
-    "[SİSTEM] AVAE Əsas İstehsalat (Mainnet) Şəbəkə Mühiti v4.8.2 uğurla işə salındı...",
-    "[ŞƏBƏKƏ] Əsas İstehsalat Klasteri ilə etibarlı əlaqə quruldu (cavab müddəti: 12ms)",
-    "[MÜQAVİLƏ] Likvidliyin saxlanması üçün əsas smart-müqavilə doğrulandı və tam aktivləşdirildi.",
-    "[MONİTOR] Node reputasiya göstəricisi optimaldır: 100% mükəmməllik dərəcəsi təmin edildi."
-  ]);
-  const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
-
-  // Avadanlıq göstəricilərinin dinamik dalğalanmaları
-  const [cpuUsage, setCpuUsage] = useState(23);
-  const [gpuUsage, setGpuUsage] = useState(45);
-  const [memoryUsage, setMemoryUsage] = useState(37);
-  const [bandwidthUsage, setBandwidthUsage] = useState(62);
-  const [diskUsage, setDiskUsage] = useState(39);
-  const [powerUsage, setPowerUsage] = useState(82);
-
-  // İnteraktiv qrafik vəziyyətləri
-  const [analyticsHoverIndex, setAnalyticsHoverIndex] = useState(null);
-
-  // Admin İdarəetmə Paneli (Kompüter idarəetmə pəncərəsi)
-  const [showConsole, setShowConsole] = useState(false);
-  const [customActionValue, setCustomActionValue] = useState("");
-
-  // Blok hündürlüyünü artırmaq və şəbəkə dinamikasını göstərmək üçün dövri olaraq yenilənən mühit
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Blok hündürlüyünü artırır
-      setBlockHeight(prev => prev + 1);
-
-      // Latensiyanı (rabitə ləngiməsini) real vaxtda tənzimləyir
-      setLatency(prev => {
-        const offset = Math.floor(Math.random() * 5) - 2;
-        const next = prev + offset;
-        return next < 5 ? 5 : next > 25 ? 25 : next;
-      });
-
-      // Aktiv likvidlik balansını cüzi şəkildə dəyişdirir
-      setTotalLiquidity(prev => {
-        const change = (Math.random() * 20000 - 9000);
-        return prev + change;
-      });
-
-      // Server avadanlıqlarının yüklənmə göstəricilərini yeniləyir
-      setCpuUsage(prev => Math.min(100, Math.max(10, prev + Math.floor(Math.random() * 7) - 3)));
-      setGpuUsage(prev => Math.min(100, Math.max(10, prev + Math.floor(Math.random() * 9) - 4)));
-      setMemoryUsage(prev => Math.min(100, Math.max(10, prev + Math.floor(Math.random() * 3) - 1)));
-      setBandwidthUsage(prev => Math.min(100, Math.max(10, prev + Math.floor(Math.random() * 5) - 2)));
-      setDiskUsage(prev => Math.min(100, Math.max(5, prev + (Math.random() > 0.9 ? 1 : 0))));
-      setPowerUsage(prev => Math.min(100, Math.max(40, prev + Math.floor(Math.random() * 5) - 2)));
-
-      // Müəyyən müddətdən bir yeni aktiv əməliyyat qeydə alır
-      if (Math.random() > 0.6) {
-        const operations = [
-          "Liquidity Contribution", "Pool Rebalancing", "Reward Allocation",
-          "Validator Settlement", "Mining Reward Distribution", "Bridge Settlement"
-        ];
-        const assets = ["USDT", "USDC", "ETH", "BTC"];
-        const pools = ["Mining Pool", "Validator Pool", "Stablecoin Vault", "Cross Chain Reserve"];
-        const validators = ["Validator #124", "Validator #087", "Validator #045", "System", "Bridge Node #12"];
-        const statuses = ["Confirmed", "Validated"];
-
-        const op = operations[Math.floor(Math.random() * operations.length)];
-        const asset = assets[Math.floor(Math.random() * assets.length)];
-        const pool = pools[Math.floor(Math.random() * pools.length)];
-        const val = validators[Math.floor(Math.random() * validators.length)];
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        const amountNum = (Math.random() * 50000).toFixed(2);
-        const amtStr = `${Math.random() > 0.3 ? '+' : '-'}${parseFloat(amountNum).toLocaleString()} ${asset}`;
-
-        const timestamp = new Date().toLocaleString('de-DE', { hour12: false }).replace(',', '');
-
-        const newTx = {
-          time: timestamp,
-          block: blockHeight + 1,
-          operation: op,
-          asset: asset,
-          pool: pool,
-          validator: val,
-          amount: amtStr,
-          status: status,
-          type: status === "Confirmed" ? "success" : "warning"
-        };
-
-        setTransactions(prev => [newTx, ...prev.slice(0, 9)]);
-        setLogs(prev => [
-          `[YENİ TRANZAKSİYA] Blok ${blockHeight + 1} işləndi: ${op} vasitəsilə ${amtStr} hovuzuna köçürüldü.`,
-          ...prev.slice(0, 15)
-        ]);
-      }
-    }, 3000);
-
+    if (!isRunning) return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [blockHeight]);
+  }, [isRunning]);
 
-  // Yeni aktiv daxil edilməsini (Depozit) icra edən funksiya
-  const handleSimulateCustomTx = (e) => {
-    e.preventDefault();
-    if (!customActionValue.trim()) return;
+  const currentActive = isTargetReached ? SIMULATION_DURATION : Math.min(SIMULATION_DURATION, accumulatedTime + (isRunning ? (now - lastStartedAt) : 0));
+  const remaining = Math.max(0, SIMULATION_DURATION - currentActive);
+  const progress = Math.min(100, (currentActive / SIMULATION_DURATION) * 100);
 
-    const timestamp = new Date().toLocaleString('de-DE', { hour12: false }).replace(',', '');
-    const customTx = {
-      time: timestamp,
-      block: blockHeight + 1,
-      operation: "Direct Asset Deposit",
-      asset: "USDT",
-      pool: "Enterprise Liquidity Vault",
-      validator: "Console Controller",
-      amount: `+${parseFloat(customActionValue).toLocaleString()} USDT`,
-      status: "Confirmed",
-      type: "success"
-    };
-
-    setTransactions(prev => [customTx, ...prev.slice(0, 9)]);
-    setLogs(prev => [
-      `[İSTİFADƏÇİ ƏMRİ] İstehsalat hovuzlarına yeni aktiv depozit edildi: +${customActionValue} USDT əlavə olundu.`,
-      ...prev
-    ]);
-    setCustomActionValue("");
-  };
+  const h = Math.floor(remaining / 3600000).toString().padStart(2, '0');
+  const m = Math.floor((remaining % 3600000) / 60000).toString().padStart(2, '0');
+  const s = Math.floor((remaining % 60000) / 1000).toString().padStart(2, '0');
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col font-sans select-none overflow-x-hidden antialiased">
+    <div className="bg-[#050505]/40 border border-white/10 rounded-xl px-4 py-2 flex flex-col justify-center min-w-[160px] relative overflow-hidden group">
+      <div className="absolute top-0 left-0 h-1 bg-gray-800 w-full overflow-hidden">
+        <div className={`h-full ${isTargetReached ? 'bg-emerald-500' : 'bg-blue-500'} transition-all duration-1000`} style={{ width: `${progress}%` }} />
+      </div>
+      <div className="flex justify-between items-center mb-1">
+        <p className="text-[10px] text-gray-500 uppercase tracking-wider flex items-center gap-1">
+          <Timer size={10} className={isRunning ? 'text-blue-400 animate-pulse' : 'text-gray-500'} /> 
+          24 Saatlıq Rejim
+        </p>
+        <span className={`text-[9px] px-1.5 py-0.5 rounded border ${isTargetReached ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/10' : isRunning ? 'border-blue-500/20 text-blue-400 bg-blue-500/10' : 'border-yellow-500/20 text-yellow-500 bg-yellow-500/10'}`}>
+          {isTargetReached ? 'Tamamlandı' : isRunning ? 'Aktiv' : 'Dayandırılıb'}
+        </span>
+      </div>
+      <div className="flex justify-between items-end">
+        <p className={`text-lg font-mono font-bold ${isTargetReached ? 'text-emerald-400' : 'text-white'}`}>{h}:{m}:{s}</p>
+        <p className="text-[10px] text-gray-400 font-mono mb-0.5">{formatNum(progress, 2)}%</p>
+      </div>
+    </div>
+  );
+});
+
+const StatCard = memo(({ title, value, icon, color = "text-gray-400" }) => (
+  <div className="bg-black/30 border border-white/5 rounded-xl p-3 flex flex-col justify-center transition-all hover:bg-white/5">
+    <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mb-1 uppercase tracking-wider">
+      {icon} {title}
+    </div>
+    <div className={`text-sm sm:text-base font-mono font-semibold ${color}`}>
+      {value}
+    </div>
+  </div>
+));
+
+const ProgressBar = memo(({ label, value, max = 100, color, suffix = '%' }) => {
+  const percent = Math.min(100, Math.max(0, (value / max) * 100));
+  return (
+    <div>
+      <div className="flex justify-between text-[10px] mb-1.5">
+        <span className="text-gray-400">{label}</span>
+        <span className="font-mono text-gray-300">{value}{suffix}</span>
+      </div>
+      <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+        <div className={`h-full ${color} transition-all duration-500 ease-out`} style={{ width: `${percent}%` }} />
+      </div>
+    </div>
+  );
+});
+
+const ModalDetail = memo(({ label, value, valueColor = "text-white" }) => (
+  <div className="bg-gray-900/50 p-2.5 rounded-lg border border-gray-800">
+    <p className="text-[10px] text-gray-500 mb-0.5">{label}</p>
+    <p className={`font-mono ${valueColor} truncate`}>{value}</p>
+  </div>
+));
+
+const CryptoLogo = memo(({ asset, className }) => (
+  <img 
+    src={ASSET_LOGOS[asset] || ASSET_LOGOS.FALLBACK} 
+    alt={asset}
+    className={`rounded-full object-cover bg-white/5 p-0.5 ${className}`}
+    onError={(e) => { e.target.src = ASSET_LOGOS.FALLBACK; }}
+    loading="lazy"
+  />
+));
+
+const HistoryRow = memo(({ trade, idx }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      <tr onClick={() => setExpanded(!expanded)} className={`cursor-pointer transition-colors ${idx % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.01]'} hover:bg-white/[0.03] group`}>
+        <td className="p-3 font-mono text-gray-400 flex items-center gap-2">
+          {expanded ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+          {trade.id.split('-')[2]}
+        </td>
+        <td className="p-3 font-medium text-white flex items-center gap-2">
+          <CryptoLogo asset={trade.asset} className="w-5 h-5" />
+          {trade.asset}
+        </td>
+        <td className="p-3 text-gray-400">
+          <div className="flex items-center gap-1 text-[10px]">
+            {trade.buyExchange} <ArrowRightLeft size={8}/> {trade.sellExchange}
+          </div>
+        </td>
+        <td className="p-3 text-emerald-400 font-mono">{formatNum(trade.spread, 3)}%</td>
+        <td className="p-3 text-gray-300 font-mono">{formatMoney(trade.tradeSize)}</td>
+        <td className="p-3 text-emerald-400 font-mono font-medium">+{formatMoney(trade.profit)}</td>
+        <td className="p-3 text-right">
+          <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded text-[10px] border border-emerald-500/20">
+            <CheckCircle2 size={10} /> Completed
+          </span>
+        </td>
+      </tr>
       
-      {/* İşıqlandırma effektləri */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-blue-900/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-950/20 rounded-full blur-[200px] pointer-events-none" />
+      {expanded && (
+        <tr className="bg-black/60 border-b border-white/5 shadow-inner">
+          <td colSpan="7" className="p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px]">
+              <div className="space-y-2">
+                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Əsas Məlumatlar</h4>
+                <div className="flex justify-between"><span className="text-gray-500">Transaction ID:</span> <span className="font-mono text-gray-300">{trade.hash.substring(0,12)}...</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Execution ID:</span> <span className="font-mono text-gray-300">{trade.id}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Tarix:</span> <span className="font-mono text-gray-300">{new Date(trade.timestamp).toLocaleTimeString()}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">İcra Mənbəyi:</span> <span className="text-blue-400">{trade.source}</span></div>
+              </div>
 
-      {/* ÜST TELEMETRİYA BAR PANELDƏ SƏNƏD GÖSTƏRİCİLƏRİ */}
-      <header className="border-b border-zinc-900 bg-black/40 backdrop-blur-md px-6 py-3 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            {/* AVAE Likvidlik Loqosu */}
-            <div className="relative flex items-center justify-center">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 animate-pulse flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.656 48.656 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3M12 3v18m0-18L9 6m3-3l3 3m-6 12h6" />
-                </svg>
+              <div className="space-y-2">
+                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Qiymət & Dəyər</h4>
+                <div className="flex justify-between"><span className="text-gray-500">Alış Qiyməti:</span> <span className="font-mono text-gray-300">{formatNum(trade.buyPrice, trade.asset === 'TRX' || trade.asset === 'ADA' || trade.asset === 'XRP' ? 4 : 2)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Satış Qiyməti:</span> <span className="font-mono text-gray-300">{formatNum(trade.sellPrice, trade.asset === 'TRX' || trade.asset === 'ADA' || trade.asset === 'XRP' ? 4 : 2)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Şəbəkə Haqqı:</span> <span className="font-mono text-red-400">-{trade.networkFee.toFixed(2)} USDT</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">ROI:</span> <span className="font-mono text-emerald-400">+{formatNum(trade.roi)}%</span></div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Texniki Cəhətlər</h4>
+                <div className="flex justify-between"><span className="text-gray-500">Execution Time:</span> <span className="font-mono text-gray-300">{trade.execTime} ms</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Latency:</span> <span className="font-mono text-gray-300">{trade.latency} ms</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Liquidity:</span> <span className="font-mono text-gray-300">{formatNum(trade.liquidity, 1)}M USDT</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Network:</span> <span className="font-mono text-gray-300">{trade.network}</span></div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">AI Analizi & Smart Route</h4>
+                <div className="flex justify-between"><span className="text-gray-500">Confidence:</span> <span className="font-mono text-emerald-400">{formatNum(trade.confidence, 1)}%</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Risk Score:</span> <span className="font-mono text-yellow-400">{formatNum(trade.riskScore, 1)}/10</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Marşrut:</span> <span className="text-gray-300 text-right max-w-[80px] truncate">{trade.route.join('→')}</span></div>
+                <div className="flex justify-between text-[9px] mt-1 pt-1 border-t border-white/5">
+                  <span className={`${trade.darkPool ? 'text-purple-400' : 'text-gray-600'}`}>{trade.darkPool ? 'Dark Pool Used' : 'No Dark Pool'}</span>
+                  <span className={`${trade.mev ? 'text-orange-400' : 'text-gray-600'}`}>{trade.mev ? 'MEV Protection' : 'Standard'}</span>
+                </div>
               </div>
             </div>
-            <div>
-              <h1 className="text-sm font-bold tracking-wider text-slate-100">AVAE LIQUID MINING</h1>
-              <span className="text-[10px] text-zinc-400 block tracking-widest uppercase">Mainnet Production</span>
-            </div>
-          </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+});
 
-          {/* İstehsalatın Aktivlik Vəziyyəti */}
-          <div className="flex items-center space-x-1.5 px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-semibold uppercase tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-            <span>Live Node</span>
-          </div>
-        </div>
+// --- Əsas Komponent ---
+export default function App() {
+  const isInitialized = useRef(false);
 
-        {/* Real vaxt rejimində fəaliyyət göstərən şəbəkə parametrləri */}
-        <div className="flex items-center space-x-6 text-[11px] font-mono">
-          <div className="flex flex-col items-end">
-            <span className="text-zinc-500 text-[9px] uppercase tracking-wider">Production Network</span>
-            <div className="flex items-center space-x-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-              <span className="text-emerald-400 font-medium">Online</span>
-            </div>
-          </div>
+  // --- SİSTEM VƏZİYYƏTİ VƏ TAYMER STATE-LƏRİ ---
+  const [accumulatedTime, setAccumulatedTime] = useState(0); 
+  const [lastStartedAt, setLastStartedAt] = useState(() => Date.now());  
+  const [isRunning, setIsRunning] = useState(true);
+  const [isTargetReached, setIsTargetReached] = useState(false);
+  const [apiConnected, setApiConnected] = useState(false);
+  
+  // --- MALİYYƏ VƏZİYYƏTİ ---
+  const [totalProfit, setTotalProfit] = useState(0);
+  const balance = roundMoney(INITIAL_BALANCE + totalProfit);
+  
+  // --- STATİSTİKA ---
+  const [stats, setStats] = useState({
+    tradesCount: 0, winRate: 100, avgSpread: 0.32, avgProfit: 0, bestTrade: 0,
+    largestVolume: 0, executionSpeed: 450, latency: 12, aiConfidence: 98.2,
+    cpuLoad: 24, memory: 45, gas: 15
+  });
 
-          <div className="h-6 w-px bg-zinc-800"></div>
+  // --- MƏLUMATLAR ---
+  const [marketData, setMarketData] = useState({});
+  const [opportunities, setOpportunities] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [logs, setLogs] = useState([]);
+  
+  const [manualModal, setManualModal] = useState({ isOpen: false, opp: null, step: 0 });
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [currentStepIndex, setCurrentStepIndex] = useState(-1);
 
-          <div className="flex flex-col items-end">
-            <span className="text-zinc-500 text-[9px] uppercase tracking-wider">Latency</span>
-            <span className="text-cyan-400 font-medium">{latency} ms</span>
-          </div>
+  // Re-render problemlərindən qaçmaq üçün refs
+  const stateRef = useRef({ accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit });
+  useEffect(() => {
+    stateRef.current = { accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit };
+  }, [accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit]);
 
-          <div className="h-6 w-px bg-zinc-800"></div>
+  const engineSteps = useMemo(() => [
+    { name: 'Opportunity Scanner', log: 'Real-time fürsətlər skan edilir...' },
+    { name: 'Route Optimizer', log: 'AI optimal birjalarası marşrutu seçdi' },
+    { name: 'Liquidity Scanner', log: 'Həcmlər və likvidlik yoxlanılır' },
+    { name: 'AI Routing', log: 'Smart Routing API təsdiqləndi' },
+    { name: 'Market Analyzer', log: 'Spread differensialı təsdiqləndi' },
+    { name: 'Spread Detector', log: 'Order book təhlili tamamlandı' },
+    { name: 'Order Executor', log: 'Flash liquidity ayrıldı & İcra edildi' }
+  ], []);
 
-          <div className="flex flex-col items-end">
-            <span className="text-zinc-500 text-[9px] uppercase tracking-wider">Block Height</span>
-            <span className="text-slate-200 font-bold tracking-widest">{blockHeight.toLocaleString()}</span>
-          </div>
+  const addLog = useCallback((text, type = 'info') => {
+    setLogs(prev => {
+      const newLogs = [{ id: Date.now() + Math.random(), time: new Date(), text, type }, ...prev];
+      return newLogs.slice(0, 60);
+    });
+  }, []);
 
-          <div className="h-6 w-px bg-zinc-800"></div>
-
-          <div className="flex flex-col items-end">
-            <span className="text-zinc-500 text-[9px] uppercase tracking-wider">Consensus</span>
-            <span className="text-blue-400 font-medium uppercase tracking-widest">Finalized</span>
-          </div>
-
-          <div className="h-6 w-px bg-zinc-800"></div>
-
-          {/* Bildirişlər və istifadəçi profili */}
-          <div className="flex items-center space-x-3 pl-2">
-            <button className="relative p-1 text-zinc-400 hover:text-slate-100 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <div className="w-8 h-8 rounded bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center font-bold text-xs tracking-wider border border-blue-500/30 text-white cursor-pointer">
-              OC
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* DAXİLİ LAYOUT QRİD SİSTEMİ */}
-      <div className="flex-1 flex overflow-hidden">
-        
-        {/* YAN MENYU NAVİQASİYASI */}
-        <aside className="w-64 border-r border-zinc-900 bg-[#080a0f] flex flex-col justify-between shrink-0">
-          <div className="p-4 space-y-6">
-            
-            {/* Aktiv İstehsalat Paneli Təsviri */}
-            <div className="p-3.5 bg-gradient-to-r from-zinc-900 to-zinc-950 rounded-lg border border-zinc-800 flex flex-col space-y-2 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full blur-xl pointer-events-none" />
-              <div className="flex items-center space-x-2 text-emerald-400 font-semibold text-xs tracking-wide">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                <span>MAINNET STATUS</span>
-              </div>
-              <p className="text-[10px] text-zinc-400 leading-relaxed">
-                Bütün rəqəmsal aktiv likvidliyi real vaxt rejimində əsas şəbəkədə (mainnet) idarə olunur və qorunur.
-              </p>
-              <div className="mt-1 pt-1.5 border-t border-zinc-800/80 flex items-center justify-between text-[9px] text-zinc-500 font-mono">
-                <span>CHAINID: 1729</span>
-                <span className="text-emerald-500">ACTIVE</span>
-              </div>
-            </div>
-
-            {/* Menyu Elementləri */}
-            <nav className="space-y-1">
-              {[
-                { name: "Dashboard", icon: Icons.Dashboard },
-                { name: "Mining", icon: Icons.Mining },
-                { name: "Liquidity Pools", icon: Icons.Pools },
-                { name: "Validators", icon: Icons.Validators },
-                { name: "Rewards", icon: Icons.Rewards },
-                { name: "Analytics", icon: Icons.Analytics },
-                { name: "Contracts", icon: Icons.Contracts },
-                { name: "Bridge", icon: Icons.Bridge },
-                { name: "Treasury", icon: Icons.Treasury },
-                { name: "Settings", icon: Icons.Settings },
-                { name: "Logs", icon: Icons.Logs },
-                { name: "Developer Console", icon: Icons.Console }
-              ].map((item) => {
-                const IconComponent = item.icon;
-                const isActive = activeTab === item.name;
-                return (
-                  <button
-                    key={item.name}
-                    onClick={() => {
-                      setActiveTab(item.name);
-                      if (item.name === "Developer Console") {
-                        setShowConsole(true);
-                      }
-                    }}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
-                      isActive 
-                        ? 'bg-blue-600/10 border border-blue-500/20 text-cyan-400' 
-                        : 'text-zinc-400 hover:text-slate-200 hover:bg-zinc-900/50 border border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <IconComponent />
-                      <span>{item.name}</span>
-                    </div>
-                    {item.name === "Developer Console" && (
-                      <span className="bg-cyan-500/10 text-cyan-400 text-[9px] px-1.5 py-0.5 rounded font-mono">LIVE</span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Sistem Klaster Məlumatı */}
-          <div className="p-4 border-t border-zinc-900">
-            <div className="rounded-lg bg-zinc-950 p-3 border border-zinc-900/50 space-y-2">
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="text-zinc-500">Mainnet GPU Stack</span>
-                <span className="text-cyan-400 font-mono font-bold">124 FLOPS</span>
-              </div>
-              <div className="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-400 h-1 w-3/4"></div>
-              </div>
-              <div className="flex items-center justify-between text-[9px] text-zinc-600">
-                <span>Cluster: Production-A</span>
-                <span>Uptime {uptime}%</span>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* ƏSAS MƏZMUN SAHƏSİ (KAYDIRILABİLİR) */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#07090d]">
+  // --- LOCALSTORAGE PERSISTENCE ---
+  useEffect(() => {
+    if (!isInitialized.current) {
+      const savedData = localStorage.getItem('quantumArbState_v4');
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData, (key, value) => {
+            if (key === 'time' || key === 'timestamp') return new Date(value);
+            return value;
+          });
           
-          {/* AVAE ƏSAS İSTEHSALAT IDARƏETMƏ PANELİ */}
-          <section className="bg-gradient-to-r from-blue-950/20 to-zinc-900/40 p-4 rounded-xl border border-blue-900/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          let accTime = parsed.accumulatedTime || 0;
+          let isDone = parsed.isTargetReached || false;
+          let profit = parsed.totalProfit || 0;
+          let running = parsed.isRunning || false;
+          
+          // Offline vaxtı aktiv hesab etmək (əgər açıq qalıbsa)
+          if (running && parsed.lastStartedAt && !isDone) {
+             const offlinePassed = Date.now() - parsed.lastStartedAt;
+             accTime += offlinePassed;
+             if (accTime >= SIMULATION_DURATION) {
+                accTime = SIMULATION_DURATION;
+                isDone = true;
+                running = false;
+                profit = TARGET_PROFIT;
+             }
+          }
+
+          setAccumulatedTime(accTime);
+          setTotalProfit(profit);
+          setIsTargetReached(isDone);
+          setIsRunning(running && !isDone);
+          setLastStartedAt(running && !isDone ? Date.now() : null);
+          
+          if (parsed.history) setHistory(parsed.history);
+          if (parsed.stats) setStats(parsed.stats);
+          if (parsed.logs) setLogs(parsed.logs);
+          
+          addLog('Sistem bərpa edildi. Real məlumatlar sinxronlaşdırılır...', 'info');
+        } catch(e) { console.error('LocalStorage parse error', e); }
+      } else {
+        addLog('Sistem hazır vəziyyətdədir. Mühərrik avtomatik işə düşdü.', 'info');
+      }
+      isInitialized.current = true;
+    }
+  }, [addLog]);
+
+  useEffect(() => {
+    if (isInitialized.current) {
+       const stateToSave = {
+          accumulatedTime, lastStartedAt, isRunning, isTargetReached,
+          totalProfit, history, stats, logs
+       };
+       localStorage.setItem('quantumArbState_v4', JSON.stringify(stateToSave));
+    }
+  }, [accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit, history, stats, logs]);
+
+  // --- HƏDƏFƏ ÇATMA FUNKSİYASI ---
+  const handleTargetReached = useCallback(() => {
+    if (stateRef.current.isTargetReached) return;
+    setIsTargetReached(true);
+    setIsRunning(false);
+    setAccumulatedTime(SIMULATION_DURATION);
+    setLastStartedAt(null);
+    setTotalProfit(TARGET_PROFIT);
+    addLog(`24 SAATLIQ HƏDƏF TAMAMLANDI — Ümumi qazanc: 49,627.00 USDT | Yekun balans: 99,627.00 USDT`, 'warning');
+  }, [addLog]);
+
+  // --- VAxt NƏZARƏTÇİSİ (Hər Saniyə) ---
+  useEffect(() => {
+    if (!isRunning || isTargetReached) return;
+    const checker = setInterval(() => {
+       const { accumulatedTime, lastStartedAt } = stateRef.current;
+       const currentActive = accumulatedTime + (Date.now() - lastStartedAt);
+       if (currentActive >= SIMULATION_DURATION) {
+           handleTargetReached();
+       }
+    }, 1000);
+    return () => clearInterval(checker);
+  }, [isRunning, isTargetReached, handleTargetReached]);
+
+  // --- REAL MARKET DATA FETCHING (BINANCE API) ---
+  const fetchMarketPrices = useCallback(async (abortController) => {
+    try {
+      const symbols = ASSETS.map(a => `${a}USDT`);
+      const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${JSON.stringify(symbols)}`, {
+        signal: abortController.signal
+      });
+      if (!response.ok) throw new Error('API Rate Limit or Error');
+      
+      const data = await response.json();
+      const newMarketData = {};
+      data.forEach(item => {
+        const asset = item.symbol.replace('USDT', '');
+        newMarketData[asset] = {
+          price: parseFloat(item.lastPrice),
+          change24h: parseFloat(item.priceChangePercent),
+          vol24h: parseFloat(item.volume) * parseFloat(item.lastPrice),
+          high: parseFloat(item.highPrice),
+          low: parseFloat(item.lowPrice)
+        };
+      });
+      setMarketData(newMarketData);
+      
+      if (!apiConnected) {
+        setApiConnected(true);
+        addLog('Binance API Connected. Real-time market synced.', 'success');
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        if (apiConnected) { setApiConnected(false); addLog('API bağlantısı kəsildi. Fallback rejimi aktivdir.', 'warning'); }
+        const fallbackData = {};
+        ASSETS.forEach(asset => {
+            const base = asset === 'BTC' ? 68000 : asset === 'ETH' ? 3500 : asset === 'SOL' ? 150 : 1;
+            fallbackData[asset] = { price: base * (1 + rand(-0.02, 0.02)), change24h: rand(-5, 5), vol24h: rand(10000000, 500000000) };
+        });
+        setMarketData(fallbackData);
+      }
+    }
+  }, [apiConnected, addLog]);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+    fetchMarketPrices(abortController);
+    const interval = setInterval(() => {
+      fetchMarketPrices(abortController);
+      setStats(prev => ({
+        ...prev, cpuLoad: randInt(20, 75), memory: randInt(40, 85), gas: randInt(8, 25),
+        latency: randInt(8, 20), aiConfidence: prev.tradesCount > 0 ? rand(96, 99.9) : 98.2
+      }));
+    }, 8000);
+    return () => { clearInterval(interval); abortController.abort(); };
+  }, [fetchMarketPrices]);
+
+  // --- OPPORTUNITY GENERATION ---
+  useEffect(() => {
+    if (Object.keys(marketData).length === 0) return;
+    const newOpportunities = ASSETS.map(asset => {
+      const realData = marketData[asset];
+      if (!realData) return null;
+
+      const basePrice = realData.price;
+      const volatilityModifier = Math.abs(realData.change24h) / 10 + 1; 
+      
+      const exchangePrices = EXCHANGES.map(exName => {
+        const deviation = rand(-0.002 * volatilityModifier, 0.002 * volatilityModifier);
+        return { name: exName, price: basePrice * (1 + deviation) };
+      });
+      exchangePrices.sort((a, b) => a.price - b.price);
+      
+      const buyEx = exchangePrices[0], sellEx = exchangePrices[exchangePrices.length - 1];
+      exchangePrices.forEach(ex => { ex.isBuy = ex.name === buyEx.name; ex.isSell = ex.name === sellEx.name; });
+
+      const middleEx = randChoice(EXCHANGES.filter(e => e !== buyEx.name && e !== sellEx.name));
+      const trueSpread = ((sellEx.price - buyEx.price) / buyEx.price) * 100;
+      const estTradeSize = rand(15000, 120000); // Daha böyük qazanclar üçün ölçü artırıldı
+      const estProfit = estTradeSize * (trueSpread / 100);
+
+      return {
+        id: generateID('OPP'), asset, route: [buyEx.name, middleEx, sellEx.name], exchanges: exchangePrices,
+        buyPrice: buyEx.price, sellPrice: sellEx.price, buyExchange: buyEx.name, sellExchange: sellEx.name,
+        spread: Math.max(0.01, trueSpread), confidence: Math.min(99.9, rand(90, 98) + (trueSpread * 10)),
+        liquidity: (realData.vol24h / 1000000) * rand(0.01, 0.05), risk: rand(0.5, 3.5), estTradeSize, estProfit,
+        execTime: randInt(150, 600), change24h: realData.change24h
+      };
+    }).filter(Boolean);
+
+    newOpportunities.sort((a, b) => b.spread - a.spread);
+    setOpportunities(newOpportunities.slice(0, 6));
+  }, [marketData]);
+
+  // --- TRADING LOGIC (24H TRAJECTORY ENFORCED) ---
+  const executeTrade = useCallback((manualOpp = null, source = 'AI Smart Routing', profitGap = null) => {
+    const { isTargetReached, totalProfit } = stateRef.current;
+    if (isTargetReached) return;
+
+    const opp = manualOpp || opportunities[0];
+    if (!opp) return;
+
+    let generatedProfit = manualOpp ? opp.estProfit : Math.min(opp.estProfit, profitGap ? profitGap * rand(0.5, 1.2) : rand(100, 500));
+    
+    // Strict Cap
+    if (totalProfit + generatedProfit >= TARGET_PROFIT) {
+       generatedProfit = TARGET_PROFIT - totalProfit;
+    }
+    
+    generatedProfit = roundMoney(Math.max(0.01, generatedProfit));
+    const newProfit = roundMoney(totalProfit + generatedProfit);
+    const tradeSize = opp.estTradeSize;
+
+    const tradeData = {
+      id: generateID('EXE'), hash: generateHash(), timestamp: new Date(), asset: opp.asset, route: opp.route,
+      buyExchange: opp.buyExchange, sellExchange: opp.sellExchange, buyPrice: opp.buyPrice, sellPrice: opp.sellPrice,
+      spread: opp.spread, tradeSize: tradeSize, networkFee: rand(0.5, 3.5), liquidity: opp.liquidity,
+      network: randChoice(['ERC-20', 'TRC-20', 'BEP-20', 'Solana', 'Arbitrum One']), slippage: rand(0.001, 0.015),
+      execTime: opp.execTime, latency: randInt(5, 15), confidence: opp.confidence, riskScore: opp.risk,
+      profit: generatedProfit, roi: (generatedProfit / tradeSize) * 100, source: source,
+      darkPool: Math.random() > 0.6, mev: Math.random() > 0.5, status: 'Completed',
+    };
+
+    setHistory(prev => [tradeData, ...prev]);
+    setTotalProfit(newProfit);
+    
+    setStats(prev => ({
+      ...prev, tradesCount: prev.tradesCount + 1, avgProfit: ((prev.avgProfit * prev.tradesCount) + generatedProfit) / (prev.tradesCount + 1),
+      bestTrade: Math.max(prev.bestTrade, generatedProfit), largestVolume: Math.max(prev.largestVolume, tradeSize),
+      avgSpread: ((prev.avgSpread * prev.tradesCount) + opp.spread) / (prev.tradesCount + 1)
+    }));
+
+    addLog(`Qazanc: +${formatMoney(generatedProfit)} | Marşrut: ${opp.route.join(' → ')} (${opp.asset})`, 'success');
+  }, [opportunities, addLog]);
+
+  // --- AUTOMATIC AI TRADING CYCLE (TRAJECTORY CONTROL) ---
+  useEffect(() => {
+    let timeout;
+    let isActive = true;
+
+    const runCycle = async () => {
+      const { isRunning, isTargetReached, accumulatedTime, lastStartedAt, totalProfit } = stateRef.current;
+      if (!isActive || !isRunning || isTargetReached || opportunities.length === 0) return;
+
+      const currentActive = accumulatedTime + (Date.now() - lastStartedAt);
+      const progressRatio = Math.min(currentActive / SIMULATION_DURATION, 1);
+      const expectedProfit = TARGET_PROFIT * progressRatio;
+      const currentDeviation = expectedProfit - totalProfit;
+
+      let willExecute = false;
+      let failureReason = '';
+
+      if (currentDeviation > (TARGET_PROFIT * 0.01)) { 
+        // We are behind the curve -> Execute
+        willExecute = true;
+        if (Math.random() > 0.8) { // 20% random fail for realism even if behind
+           willExecute = false;
+           failureReason = 'Market volatility detected. Waiting for confirmation.';
+        }
+      } else {
+        // We are ahead or exactly on curve -> Skip
+        willExecute = false;
+        const reasons = [
+          'Opportunity skipped: Spread below execution threshold.',
+          'Liquidity validation failed. Route rejected.',
+          'Risk score exceeded AI execution limit.'
+        ];
+        failureReason = randChoice(reasons);
+      }
+
+      for (let i = 0; i < engineSteps.length; i++) {
+        if (!isActive || !stateRef.current.isRunning) return;
+        setCurrentStepIndex(i);
+        let customLog = engineSteps[i].log;
+        if (i === 1) customLog = `AI optimal marşrutu seçdi: ${opportunities[0].route.join(' → ')}`;
+        if (i === 4) customLog = `Spread təsdiqləndi: ${formatNum(opportunities[0].spread, 3)}%`;
+        addLog(customLog, 'process');
+        await new Promise(r => setTimeout(r, randInt(250, 450)));
+      }
+
+      if (!isActive || !stateRef.current.isRunning) return;
+      
+      if (willExecute) {
+         executeTrade(null, 'AI Auto Arbitrage', currentDeviation);
+      } else {
+         addLog(failureReason, 'warning');
+      }
+
+      setCurrentStepIndex(-1);
+      timeout = setTimeout(runCycle, randInt(1500, 3500));
+    };
+
+    if (isRunning && !isTargetReached) {
+       runCycle();
+    }
+
+    return () => {
+      isActive = false;
+      clearTimeout(timeout);
+      setCurrentStepIndex(-1);
+    };
+  }, [isRunning, isTargetReached, opportunities, engineSteps, executeTrade, addLog]);
+
+  // --- BUTTON HANDLERS ---
+  const toggleRunning = () => {
+     if (isTargetReached) return;
+     if (isRunning) {
+        setAccumulatedTime(prev => prev + (Date.now() - lastStartedAt));
+        setLastStartedAt(null);
+        setIsRunning(false);
+        addLog('Sistem istifadəçi tərəfindən dayandırıldı (Pause).', 'warning');
+     } else {
+        setLastStartedAt(Date.now());
+        setIsRunning(true);
+        addLog('Sistem aktivləşdirildi. Mühərrik işə düşür...', 'success');
+     }
+  };
+
+  const resetSystem = () => {
+     localStorage.removeItem('quantumArbState_v4');
+     setAccumulatedTime(0);
+     setLastStartedAt(Date.now());
+     setIsRunning(true);
+     setIsTargetReached(false);
+     setTotalProfit(0);
+     setHistory([]);
+     setStats({ tradesCount: 0, winRate: 100, avgSpread: 0.32, avgProfit: 0, bestTrade: 0, largestVolume: 0, executionSpeed: 450, latency: 12, aiConfidence: 98.2, cpuLoad: 24, memory: 45, gas: 15 });
+     setLogs([{ id: 1, time: new Date(), text: 'Sistem tam sıfırlandı. Mühərrik avtomatik işə düşür...', type: 'info' }]);
+     setResetModalOpen(false);
+  };
+
+  // --- MANUAL EXECUTION ---
+  const handleManualExecute = useCallback((opp) => { setManualModal({ isOpen: true, opp, step: 0 }); }, []);
+
+  const processManualSignature = async () => {
+    if (manualModal.step > 0) return;
+    const steps = [
+      { s: 1, delay: 800, log: 'Tranzaksiya imzalama gözləyir...' }, { s: 2, delay: 1200, log: 'Node tərəfindən yoxlanılır (Validation)...' },
+      { s: 3, delay: 1500, log: 'Blokçeyn təsdiqi gözlənilir...' }, { s: 4, delay: 1000, log: 'Hesablaşma (Settlement) aparılır...' },
+      { s: 5, delay: 500, log: 'Manual tranzaksiya uğurla tamamlandı.' }
+    ];
+    for (const step of steps) {
+      setManualModal(prev => ({ ...prev, step: step.s }));
+      addLog(step.log, 'info');
+      await new Promise(r => setTimeout(r, step.delay));
+    }
+    executeTrade(manualModal.opp, 'Manual Smart Contract');
+    setTimeout(() => { setManualModal({ isOpen: false, opp: null, step: 0 }); }, 2000);
+  };
+
+  const hasData = opportunities.length > 0;
+
+  return (
+    <div className="min-h-screen bg-[#050505] text-gray-300 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-900/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-900/10 blur-[120px]" />
+        <div className="absolute top-[40%] left-[50%] translate-x-[-50%] w-[60%] h-[20%] rounded-full bg-emerald-500/5 blur-[150px]" />
+      </div>
+
+      <div className="relative z-10 p-2 sm:p-4 md:p-6 max-w-7xl mx-auto space-y-4 md:space-y-6">
+        
+        {/* HEADER */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl backdrop-blur-xl relative">
+          
+          <button onClick={() => setResetModalOpen(true)} className="absolute top-4 right-4 text-gray-500 hover:text-red-400 transition-colors p-2 bg-white/5 rounded-lg border border-white/5 md:hidden" title="Sistemi Sıfırla">
+             <RotateCcw size={14} />
+          </button>
+
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                <Layers className="text-white w-6 h-6" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#050505] animate-pulse" />
+            </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-200 tracking-wide flex items-center space-x-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
-                <span>AVAE LIVE PRODUCTION PLATFORM NETWORK</span>
-              </h2>
-              <p className="text-xs text-zinc-400 mt-1">
-                Aktiv şəkildə fəaliyyət göstərən likvidlik idarəetmə hovuzlarını, şəbəkə nodlarını və əməliyyat dərəcələrini idarə edirsiniz.
-              </p>
-            </div>
-            
-            {/* Şəbəkəyə sürətli aktiv daxilolma paneli */}
-            <div className="flex items-center space-x-2 w-full md:w-auto">
-              <input 
-                type="number"
-                placeholder="Deposit Amount (e.g. 50000)" 
-                value={customActionValue}
-                onChange={(e) => setCustomActionValue(e.target.value)}
-                className="bg-black/60 border border-zinc-800 rounded px-3 py-1.5 text-xs text-cyan-400 placeholder-zinc-600 focus:outline-none focus:border-cyan-500/50 w-full md:w-52 font-mono"
-              />
-              <button 
-                onClick={handleSimulateCustomTx}
-                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold whitespace-nowrap transition-colors shadow-lg shadow-blue-600/20"
-              >
-                Deposit Assets
-              </button>
-            </div>
-          </section>
-
-          {/* AKTİV BALANS, STATİSTİKALAR VƏ LİKVİDLİK MƏNBƏLƏRİ */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* KART 1: CƏM AKTİV LİKVİDLİK */}
-            <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-6 flex flex-col justify-between relative overflow-hidden group hover:border-zinc-700/50 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-36 h-36 bg-blue-600/5 rounded-full blur-2xl pointer-events-none group-hover:bg-blue-600/10 transition-all" />
-              
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-400 font-semibold tracking-wider uppercase">Total Liquidity Base</span>
-                  <div className="text-[10px] text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded font-mono">USDT Base</div>
-                </div>
-
-                {/* Real vaxtda dinamik yenilənən balans */}
-                <div className="mt-4">
-                  <div className="text-3xl font-extrabold tracking-tight text-white font-mono">
-                    ${totalLiquidity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    <span className="px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-semibold uppercase tracking-wider">Mainnet Balance</span>
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-semibold uppercase tracking-wider">Mining Rewards Pool</span>
-                    <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[9px] font-semibold uppercase tracking-wider">Primary Production</span>
-                  </div>
-                </div>
+              <div className="flex items-center gap-2">
+                 <h1 className="text-xl font-bold text-white tracking-wide">QUANTUM<span className="text-emerald-400">ARB</span></h1>
+                 <button onClick={() => setResetModalOpen(true)} className="hidden md:flex text-gray-500 hover:text-red-400 transition-colors p-1.5 bg-white/5 rounded-md border border-white/5" title="Sistemi Sıfırla">
+                    <RotateCcw size={12} />
+                 </button>
               </div>
-
-              {/* Son əməliyyat məlumatları */}
-              <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-zinc-900 text-xs">
-                <div>
-                  <span className="text-zinc-500 block uppercase text-[10px] tracking-wider">Last Activity</span>
-                  <span className="font-semibold text-emerald-400 font-mono">May 26, 2026</span>
-                </div>
-                <div>
-                  <span className="text-zinc-500 block uppercase text-[10px] tracking-wider">Last Login</span>
-                  <span className="font-semibold text-slate-300 font-mono">14.07.2026</span>
-                </div>
-                <div>
-                  <span className="text-zinc-500 block uppercase text-[10px] tracking-wider">Mining Started</span>
-                  <span className="font-semibold text-blue-400 font-mono">January 2021</span>
-                </div>
-                <div>
-                  <span className="text-zinc-500 block uppercase text-[10px] tracking-wider">Network</span>
-                  <span className="font-semibold text-purple-400">Mainnet Apex Cluster</span>
-                </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-gray-500">HFT Arbitrage Dashboard v4.5</span>
+                {apiConnected ? (
+                   <span className="flex items-center gap-1 text-emerald-400"><Wifi size={10} /> Live Data</span>
+                ) : (
+                   <span className="flex items-center gap-1 text-yellow-500"><WifiOff size={10} /> Syncing...</span>
+                )}
               </div>
             </div>
-
-            {/* KART 2: MAJNİNQ STATİSTİKALARI */}
-            <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-6 flex flex-col justify-between hover:border-zinc-700/50 transition-all duration-300">
-              <div>
-                <span className="text-xs text-zinc-400 font-semibold tracking-wider uppercase block">Mining Statistics</span>
-                <div className="mt-4 space-y-2.5 text-xs font-mono">
-                  {[
-                    { label: "Mining Nodes", value: "247", style: "text-slate-200" },
-                    { label: "Active Validators", value: "124", style: "text-slate-200" },
-                    { label: "Worker Threads", value: "18,452", style: "text-slate-200" },
-                    { label: "Mining Difficulty", value: "Adaptive", style: "text-blue-400" },
-                    { label: "Hash Power", value: "4.82 EH/s", style: "text-cyan-400" },
-                    { label: "Reward Distribution", value: "Automatic", style: "text-purple-400" },
-                    { label: "Average Daily Reward", value: "145.2K USDT", style: "text-cyan-400" },
-                    { label: "Block Rewards", value: "Confirmed", style: "text-emerald-400" },
-                    { label: "Consensus Model", value: "PoS + Liquidity Proof", style: "text-zinc-300" }
-                  ].map((stat, i) => (
-                    <div key={i} className="flex items-center justify-between py-1 border-b border-zinc-900/50">
-                      <span className="text-zinc-500">{stat.label}</span>
-                      <span className={`font-bold ${stat.style}`}>{stat.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* KART 3: LİKVİDLİK MƏNBƏLƏRİ - DONUT QRASİFİ */}
-            <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-6 flex flex-col justify-between hover:border-zinc-700/50 transition-all duration-300 relative overflow-hidden">
-              <div>
-                <span className="text-xs text-zinc-400 font-semibold tracking-wider uppercase block mb-4">Liquidity Sources</span>
-                
-                <div className="flex items-center justify-around gap-2 mt-2">
-                  <div className="relative w-32 h-32 flex items-center justify-center">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                      {/* Mining Rewards 62% (Cyan) */}
-                      <circle cx="18" cy="18" r="15.915" fill="none" stroke="#06b6d4" strokeWidth="3" strokeDasharray="62 38" strokeDashoffset="0" />
-                      {/* Validator Rewards 18% (Blue) */}
-                      <circle cx="18" cy="18" r="15.915" fill="none" stroke="#2563eb" strokeWidth="3" strokeDasharray="18 82" strokeDashoffset="-62" />
-                      {/* Liquidity Incentives 12% (Purple) */}
-                      <circle cx="18" cy="18" r="15.915" fill="none" stroke="#8b5cf6" strokeWidth="3" strokeDasharray="12 88" strokeDashoffset="-80" />
-                      {/* Bridge Rewards 5% (Amber) */}
-                      <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f59e0b" strokeWidth="3" strokeDasharray="5 95" strokeDashoffset="-92" />
-                      {/* Treasury 3% (Emerald) */}
-                      <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" strokeWidth="3" strokeDasharray="3 97" strokeDashoffset="-97" />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0b0e14] rounded-full m-3 border border-zinc-900">
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Total</span>
-                      <span className="text-sm font-bold text-white font-mono">100%</span>
-                    </div>
-                  </div>
-
-                  {/* Likvidlik mənbələri göstəriciləri */}
-                  <div className="space-y-2 text-[10px] font-mono">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2.5 h-2.5 rounded bg-cyan-500 inline-block"></span>
-                      <span className="text-zinc-400">Mining Rewards</span>
-                      <span className="text-slate-200 font-bold ml-auto">62%</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2.5 h-2.5 rounded bg-blue-600 inline-block"></span>
-                      <span className="text-zinc-400">Validator Rewards</span>
-                      <span className="text-slate-200 font-bold ml-auto">18%</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2.5 h-2.5 rounded bg-purple-500 inline-block"></span>
-                      <span className="text-zinc-400">Liquidity Incentives</span>
-                      <span className="text-slate-200 font-bold ml-auto">12%</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span>
-                      <span className="text-zinc-400">Bridge Rewards</span>
-                      <span className="text-slate-200 font-bold ml-auto">5%</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span>
-                      <span className="text-zinc-400">Treasury</span>
-                      <span className="text-slate-200 font-bold ml-auto">3%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
 
-          {/* ƏTRAFLI ANALİTİK VƏ TELEMETRİYA GRİDİ */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* SOL SÜTUN: ALLOCATION & HARDWARE MONITOR (8 COL) */}
-            <div className="lg:col-span-8 space-y-6">
-              
-              {/* LİKVİDLİK BÖLGÜSÜ (RESERVES) */}
-              <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-5 hover:border-zinc-700/50 transition-all">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-300 tracking-wider uppercase">Liquidity Allocation</h3>
-                    <p className="text-[10px] text-zinc-500">Asset distribution breakdown for the live platform reserves</p>
-                  </div>
-                  <span className="text-[10px] text-emerald-400 font-mono">Dynamic Rebalance System Active</span>
-                </div>
+          <div className="flex flex-wrap gap-3 w-full md:w-auto">
+            <TimerCard accumulatedTime={accumulatedTime} lastStartedAt={lastStartedAt} isRunning={isRunning} isTargetReached={isTargetReached} />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-xs font-mono">
-                  {[
-                    { token: "BTC Reserve", value: 18.52, color: "bg-amber-500", raw: "~45,450 BTC" },
-                    { token: "ETH Reserve", value: 17.35, color: "bg-indigo-500", raw: "~620,000 ETH" },
-                    { token: "USDT Reserve", value: 28.41, color: "bg-emerald-500", raw: "~6,980,000,000 USDT" },
-                    { token: "USDC Reserve", value: 15.23, color: "bg-blue-500", raw: "~3,740,000,000 USDC" },
-                    { token: "Wrapped Assets", value: 8.74, color: "bg-purple-500", raw: "~2,140,000,000 WBTC/WETH" },
-                    { token: "Stablecoin Vault", value: 6.12, color: "bg-cyan-500", raw: "~1,500,000,000 DAI" },
-                    { token: "Cross Chain Reserve", value: 3.85, color: "bg-rose-500", raw: "~945,000,000 LINK/AVAX" },
-                    { token: "Liquidity Buffer", value: 1.78, color: "bg-teal-500", raw: "~437,000,000 Contingency" }
-                  ].map((asset, i) => (
-                    <div key={i} className="space-y-1.5 p-2 rounded hover:bg-zinc-900/30 transition-colors">
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-slate-300 font-medium flex items-center space-x-1.5">
-                          <span className={`w-1.5 h-1.5 rounded-full ${asset.color}`} />
-                          <span>{asset.token}</span>
-                        </span>
-                        <div className="space-x-1.5 text-right">
-                          <span className="text-zinc-500 text-[9px]">{asset.raw}</span>
-                          <span className="text-slate-200 font-bold">{asset.value}%</span>
+            <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 flex-1 md:flex-none flex flex-col justify-center">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider">Cari Balans</p>
+              <p className="text-lg font-mono font-bold text-white">{formatMoney(balance)}</p>
+            </div>
+            <div className="bg-emerald-900/20 border border-emerald-500/20 rounded-xl px-4 py-2 flex-1 md:flex-none flex flex-col justify-center">
+              <p className="text-[10px] text-emerald-400/80 uppercase tracking-wider">Ümumi Qazanc</p>
+              <p className="text-lg font-mono font-bold text-emerald-400">+{formatMoney(totalProfit)}</p>
+            </div>
+            <button 
+              onClick={toggleRunning}
+              disabled={isTargetReached || !hasData}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl font-medium transition-all duration-300 shadow-lg ${
+                isTargetReached 
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  : isRunning 
+                    ? 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20' 
+                    : !hasData 
+                      ? 'bg-emerald-900/50 text-emerald-700 cursor-wait'
+                      : 'bg-emerald-500 text-black hover:bg-emerald-400 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]'
+              }`}
+            >
+              {isTargetReached ? <CheckCircle2 size={18} /> : isRunning ? <StopCircle size={18} /> : <Play size={18} />}
+              {isTargetReached ? '24 SAAT TAMAMLANDI' : isRunning ? 'Sistemi Dayandır' : !hasData ? 'Yüklənir...' : 'Avto Start'}
+            </button>
+          </div>
+        </header>
+
+        {/* SCHEDULED EXECUTION WINDOW */}
+        <div className="bg-[#0a0a0c]/80 border border-white/5 rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 backdrop-blur-md font-mono text-xs shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-900/20 p-1.5 rounded border border-blue-500/20">
+              <Clock size={14} className="text-blue-400" />
+            </div>
+            <div>
+              <div className="text-gray-500 text-[10px] tracking-widest uppercase mb-0.5">Scheduled Execution Window</div>
+              <div className="text-gray-300">Trading engine activation: <span className="text-blue-400 font-semibold">13/07/2026 — 18:00</span></div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 bg-white/[0.02] px-3 py-1.5 rounded border border-white/5">
+             <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+             </span>
+             <span className="text-gray-400">System status:</span>
+             <span className="text-blue-400">Awaiting scheduled initialization</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          
+          {/* SOL TƏRƏF (Stats & Scanner) */}
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
+            
+            {/* STATS GRID */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <StatCard title="Win Rate" value={`${stats.tradesCount === 0 ? 100 : formatNum((stats.tradesCount / (stats.tradesCount + Math.floor(stats.tradesCount * 0.2))) * 100, 1)}%`} icon={<Crosshair size={14} />} color="text-blue-400" />
+              <StatCard title="Uğurlu Əməliyyat" value={stats.tradesCount} icon={<CheckCircle2 size={14} />} color="text-emerald-400" />
+              <StatCard title="Gündəlik ROI" value={`+${formatNum((totalProfit/INITIAL_BALANCE)*100)}%`} icon={<TrendingUp size={14} />} color="text-emerald-400" />
+              <StatCard title="Ən Yaxşı Qazanc" value={formatMoney(stats.bestTrade)} icon={<DollarSign size={14} />} color="text-purple-400" />
+              
+              <StatCard title="Ort. Spread" value={`${formatNum(stats.avgSpread, 3)}%`} icon={<ArrowRightLeft size={14} />} />
+              <StatCard title="İcra Sürəti" value={`${stats.executionSpeed} ms`} icon={<Zap size={14} />} />
+              <StatCard title="AI İnamı" value={`${formatNum(stats.aiConfidence)}%`} icon={<Cpu size={14} />} color={stats.aiConfidence > 97 ? "text-emerald-400" : "text-yellow-400"} />
+              <StatCard title="Şəbəkə Gecikməsi" value={`${stats.latency} ms`} icon={<Globe size={14} />} />
+            </div>
+
+            {/* ENGINE VISUALIZATION */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 backdrop-blur-md relative overflow-hidden">
+              <div className="flex items-center gap-2 mb-4">
+                <Cpu className="text-emerald-500 w-5 h-5" />
+                <h2 className="text-sm font-semibold text-white">AI Real-Time Mühərriki</h2>
+                {isRunning && <span className="ml-auto flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>}
+              </div>
+              
+              <div className="flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 relative">
+                <div className="hidden sm:block absolute top-1/2 left-0 w-full h-[2px] bg-gray-800 -z-10 -translate-y-1/2" />
+                
+                {engineSteps.map((step, idx) => {
+                  const isActive = idx === currentStepIndex;
+                  const isPast = idx < currentStepIndex || (currentStepIndex === -1 && isRunning && idx === 0);
+                  return (
+                    <div key={idx} className="flex flex-col items-center gap-2 z-10 w-1/3 sm:w-auto mb-2 sm:mb-0">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${isActive ? 'bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.6)] scale-110' : isPast ? 'bg-emerald-900/50 text-emerald-500 border border-emerald-500/30' : 'bg-gray-900 border border-gray-800 text-gray-600'}`}>
+                        {idx + 1}
+                      </div>
+                      <span className={`text-[9px] sm:text-[10px] text-center max-w-[60px] leading-tight ${isActive ? 'text-emerald-400 font-medium' : 'text-gray-500'}`}>
+                        {step.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* OPPORTUNITY SCANNER WITH REAL PRICES */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col h-auto min-h-[400px] backdrop-blur-md">
+              <div className="p-4 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#050505]/80 z-10 rounded-t-2xl">
+                <div className="flex items-center gap-2">
+                  <Activity className="text-blue-400 w-5 h-5" />
+                  <h2 className="text-sm font-semibold text-white">Live Arbitrage Matrix</h2>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  {apiConnected && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                  )}
+                  Real-time API
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-auto p-3 scrollbar-hide space-y-3">
+                {!hasData ? (
+                   <div className="flex flex-col items-center justify-center h-full text-gray-500 space-y-3 py-10">
+                      <Activity className="w-8 h-8 animate-spin text-emerald-500/50" />
+                      <p className="text-xs">Bazar məlumatları sinxronlaşdırılır...</p>
+                   </div>
+                ) : (
+                  opportunities.map((opp) => (
+                    <div key={opp.id} className="group bg-black/40 border border-white/5 hover:border-emerald-500/30 rounded-xl p-4 flex flex-col transition-all duration-300 hover:bg-emerald-900/5 shadow-lg">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
+                        <div className="flex items-center gap-3">
+                          <CryptoLogo asset={opp.asset} className="w-10 h-10 border border-white/10" />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-white">{opp.asset}/USDT</span>
+                              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${opp.change24h >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                {opp.change24h > 0 ? '+' : ''}{formatNum(opp.change24h)}%
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-1">
+                               <span>Route:</span>
+                               <span className="text-emerald-400 font-medium">{opp.buyExchange}</span>
+                               <ArrowRightLeft size={10} className="text-gray-600"/>
+                               <span className="text-red-400 font-medium">{opp.sellExchange}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                          <div className="text-left sm:text-right flex-1 sm:flex-none">
+                            <p className="text-[10px] text-gray-500">Real Spread / Qazanc</p>
+                            <p className="text-sm font-mono font-bold text-emerald-400">
+                              {formatNum(opp.spread, 3)}% <span className="text-gray-600 font-sans font-normal mx-1">|</span> +{formatMoney(opp.estProfit)}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={() => handleManualExecute(opp)}
+                            disabled={isRunning || isTargetReached}
+                            className="w-full sm:w-auto px-4 py-2 bg-white/5 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg border border-white/10 hover:border-emerald-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1 whitespace-nowrap"
+                          >
+                            <PenTool size={12} /> Manual İcra
+                          </button>
                         </div>
                       </div>
-                      <div className="w-full bg-zinc-900/80 h-1.5 rounded-full overflow-hidden">
-                        <div className={`${asset.color} h-1.5 rounded-full transition-all duration-1000`} style={{ width: `${asset.value}%` }}></div>
+
+                      <div className="mt-4 pt-3 border-t border-white/5">
+                        <div className="flex items-center justify-between text-[9px] text-gray-500 mb-2 px-1">
+                          <span>Live Exchange Prices (USDT)</span>
+                          <span className="flex gap-3">
+                            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Buy (Low)</span>
+                            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>Sell (High)</span>
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                          {opp.exchanges.map(ex => (
+                            <div key={ex.name} className={`bg-[#0a0a0c] p-2 rounded-md border text-center transition-colors ${ex.isBuy ? 'border-emerald-500/30 bg-emerald-900/10' : ex.isSell ? 'border-red-500/30 bg-red-900/10' : 'border-white/5 hover:border-white/10'}`}>
+                              <div className="text-[9px] text-gray-500 mb-0.5">{ex.name}</div>
+                              <div className={`text-[10px] font-mono font-medium ${ex.isBuy ? 'text-emerald-400' : ex.isSell ? 'text-red-400' : 'text-gray-300'}`}>
+                                {formatNum(ex.price, opp.asset === 'TRX' || opp.asset === 'ADA' || opp.asset === 'XRP' ? 4 : 2)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                )}
+              </div>
+            </div>
+
+          </div>
+
+          {/* SAĞ TƏRƏF (Terminal & System Stats) */}
+          <div className="space-y-4 md:space-y-6">
+            
+            {/* TERMINAL */}
+            <div className="bg-[#0a0a0c] border border-white/10 rounded-2xl flex flex-col h-[400px] shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+              <div className="p-3 border-b border-white/5 flex items-center justify-between bg-black/40">
+                <div className="flex items-center gap-2">
+                  <TerminalIcon className="text-gray-400 w-4 h-4" />
+                  <span className="text-xs font-mono text-gray-400">root@quantum-arb:~#</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
                 </div>
               </div>
-
-              {/* MAJNİNQ PANELDƏ OPERASİYA VƏZİYYƏTİ */}
-              <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-5 space-y-6">
-                <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-300 tracking-wider uppercase flex items-center space-x-1.5">
-                      <svg className="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span>Mining Dashboard</span>
-                    </h3>
-                    <p className="text-[10px] text-zinc-500">Live operational telemetry feed from hardware worker threads</p>
-                  </div>
-                  <div className="flex items-center space-x-4 text-[10px] font-mono">
-                    <span className="text-emerald-400 flex items-center space-x-1">
-                      <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block"></span>
-                      <span>Worker Engine Sync Status: Normal</span>
+              <div className="flex-1 overflow-auto p-4 font-mono text-[11px] sm:text-xs space-y-1.5 scrollbar-hide flex flex-col-reverse">
+                {logs.map(log => (
+                  <div key={log.id} className="flex gap-3 break-all animate-fade-in">
+                    <span className="text-gray-600 shrink-0">[{log.time.toLocaleTimeString('en-US', {hour12: false, fractionalSecondDigits: 3})}]</span>
+                    <span className={`${log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-yellow-400' : log.type === 'process' ? 'text-blue-400' : 'text-gray-300'}`}>
+                      {log.text}
                     </span>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {/* Göstərici 1 */}
-                  <div className="bg-[#0e1119] border border-zinc-900 p-3.5 rounded-lg text-xs">
-                    <div className="text-zinc-500 uppercase text-[9px] tracking-wider">Workers Online</div>
-                    <div className="text-xl font-extrabold text-white font-mono mt-1">247</div>
-                    <div className="text-[9px] text-zinc-600 mt-2 flex items-center space-x-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span>Dedicated Nodes Active</span>
-                    </div>
-                  </div>
-
-                  {/* Göstərici 2 */}
-                  <div className="bg-[#0e1119] border border-zinc-900 p-3.5 rounded-lg text-xs">
-                    <div className="text-zinc-500 uppercase text-[9px] tracking-wider">Blocks Validated</div>
-                    <div className="text-xl font-extrabold text-white font-mono mt-1">18,524</div>
-                    <div className="text-[9px] text-zinc-600 mt-2 flex items-center space-x-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                      <span>Height: {blockHeight}</span>
-                    </div>
-                  </div>
-
-                  {/* Göstərici 3 */}
-                  <div className="bg-[#0e1119] border border-zinc-900 p-3.5 rounded-lg text-xs">
-                    <div className="text-zinc-500 uppercase text-[9px] tracking-wider">Pending Rewards</div>
-                    <div className="text-xl font-extrabold text-cyan-400 font-mono mt-1">1,254,875.43 <span className="text-[10px] text-zinc-500 font-normal">USDT</span></div>
-                    <div className="text-[9px] text-zinc-600 mt-2 flex items-center space-x-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                      <span>Platform Liquidity Pool</span>
-                    </div>
-                  </div>
-
-                  {/* Göstərici 4 */}
-                  <div className="bg-[#0e1119] border border-zinc-900 p-3.5 rounded-lg text-xs">
-                    <div className="text-zinc-500 uppercase text-[9px] tracking-wider">Mining Efficiency</div>
-                    <div className="text-xl font-extrabold text-emerald-400 font-mono mt-1">99.94%</div>
-                    <div className="text-[9px] text-zinc-600 mt-2 flex items-center space-x-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span>Hash Collision Minimal</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Fiziki Node-ların Gücü və Yüklənməsi */}
-                <div className="bg-[#080b10] border border-zinc-900 rounded-lg p-4">
-                  <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-3">Mainnet Node Hardware Utilization</div>
-                  <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-xs font-mono">
-                    {[
-                      { label: "CPU", value: cpuUsage, color: "text-emerald-400", bg: "bg-emerald-500" },
-                      { label: "GPU", value: gpuUsage, color: "text-blue-400", bg: "bg-blue-500" },
-                      { label: "Memory", value: memoryUsage, color: "text-indigo-400", bg: "bg-indigo-500" },
-                      { label: "Bandwidth", value: bandwidthUsage, color: "text-cyan-400", bg: "bg-cyan-500" },
-                      { label: "Disk", value: diskUsage, color: "text-purple-400", bg: "bg-purple-500" },
-                      { label: "Power Usage", value: powerUsage, color: "text-amber-400", bg: "bg-amber-500" }
-                    ].map((hw, idx) => (
-                      <div key={idx} className="bg-[#0e1119] p-2.5 rounded border border-zinc-900 text-center">
-                        <div className="text-zinc-500 text-[9px] uppercase tracking-wider">{hw.label}</div>
-                        <div className={`text-sm font-bold my-1 ${hw.color}`}>{hw.value}%</div>
-                        <div className="w-full bg-zinc-950 h-1 rounded-full overflow-hidden">
-                          <div className={`${hw.bg} h-1 rounded-full transition-all duration-300`} style={{ width: `${hw.value}%` }}></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
-
-              {/* LİKVİDLİK HOVUZU ANALİTİKLƏRİ */}
-              <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-5 space-y-4">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-300 tracking-wider uppercase">Liquidity Pool Analytics</h3>
-                  <p className="text-[10px] text-zinc-500 mt-0.5">Real-time charts representing active production yield indexes</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    { title: "TVL Growth", percentage: "+24.58%", points: "5,30 20,25 40,35 60,15 80,45 100,20 120,50 140,10 160,40", stroke: "#06b6d4" },
-                    { title: "Reward Curve", percentage: "+18.34%", points: "5,45 20,40 40,42 60,30 80,35 100,20 120,22 140,15 160,5", stroke: "#8b5cf6" },
-                    { title: "Network Throughput", percentage: "1.24M TPS", points: "5,40 20,45 40,25 60,35 80,10 100,30 120,15 140,25 160,20", stroke: "#f59e0b" }
-                  ].map((chart, i) => (
-                    <div 
-                      key={i} 
-                      className="bg-[#0e1119] border border-zinc-900 rounded-lg p-3.5 space-y-3 cursor-pointer hover:border-zinc-700/50 transition-all"
-                      onMouseEnter={() => setAnalyticsHoverIndex(i)}
-                      onMouseLeave={() => setAnalyticsHoverIndex(null)}
-                    >
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-zinc-400 font-medium">{chart.title}</span>
-                        <span className="text-emerald-400 font-bold font-mono">{chart.percentage}</span>
-                      </div>
-                      
-                      {/* Vektor şəklində interaktiv analitika qrafikləri */}
-                      <div className="h-12 w-full">
-                        <svg viewBox="0 0 160 50" className="w-full h-full overflow-visible">
-                          <polyline
-                            fill="none"
-                            stroke={chart.stroke}
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            points={chart.points}
-                          />
-                          {analyticsHoverIndex === i && (
-                            <line x1="80" y1="0" x2="80" y2="50" stroke="#4b5563" strokeDasharray="2" strokeWidth="1" />
-                          )}
-                        </svg>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
             </div>
 
-            {/* SAĞ SÜTUN: VALİDATOR PANEL VƏ SMART MÜQAVİLƏ GÖSTƏRİCİLƏRİ (4 COL) */}
-            <div className="lg:col-span-4 space-y-6">
-              
-              {/* VALİDATOR ŞƏBƏKƏSİ PANALİ */}
-              <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-5 space-y-4">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-300 tracking-wider uppercase">Validator Panel</h3>
-                  <p className="text-[10px] text-zinc-500">Live state of main liquidity orchestrator node</p>
-                </div>
-
-                <div className="flex items-center space-x-3.5 bg-zinc-950 p-3 rounded border border-zinc-900">
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                      <svg className="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                    </div>
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-zinc-950"></span>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-200">Mainnet Gateway #124</div>
-                    <span className="text-[10px] text-emerald-400 font-mono">Consensus Node Synced</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-xs font-mono">
-                  {[
-                    { label: "Validator Status", val: "Healthy", style: "text-emerald-400" },
-                    { label: "Consensus State", val: "Synced", style: "text-emerald-400" },
-                    { label: "Last Block", val: "2 sec ago", style: "text-slate-200" },
-                    { label: "Node Reputation", val: "Excellent", style: "text-cyan-400" },
-                    { label: "Peer Connections", val: "482 Nodes", style: "text-slate-300" },
-                    { label: "Uptime Metric", val: "99.999%", style: "text-emerald-400" },
-                    { label: "Jailed / Slashed", val: "0 / 0", style: "text-zinc-500" }
-                  ].map((row, i) => (
-                    <div key={i} className="flex justify-between items-center py-1.5 border-b border-zinc-900/50">
-                      <span className="text-zinc-500">{row.label}</span>
-                      <span className={`font-semibold ${row.style}`}>{row.val}</span>
-                    </div>
-                  ))}
+            {/* SYSTEM STATUS MINIMAL */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 backdrop-blur-md">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Server size={14} /> Təchizat & Şəbəkə
+              </h3>
+              <div className="space-y-3">
+                <ProgressBar label="CPU Mühərrik Yükü" value={stats.cpuLoad} color="bg-blue-500" />
+                <ProgressBar label="Operativ Yaddaş" value={stats.memory} color="bg-purple-500" />
+                <ProgressBar label="Şəbəkə Sıxlığı (Gas)" value={stats.gas} max={100} color="bg-orange-500" suffix=" Gwei" />
+                <div className="pt-2 flex justify-between text-[10px] text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 size={10} className={apiConnected ? "text-emerald-500" : "text-yellow-500"}/> 
+                    Binance API: {apiConnected ? 'Aktiv' : 'Yüklənir'}
+                  </span>
+                  <span className="flex items-center gap-1"><CheckCircle2 size={10} className="text-emerald-500"/> Node: Sinxron</span>
                 </div>
               </div>
-
-              {/* SMART-MÜQAVİLƏ TƏHLÜKƏSİZLİK ANALİTİKASI */}
-              <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-5 space-y-4">
-                <div>
-                  <h3 className="text-xs font-bold text-slate-300 tracking-wider uppercase">Smart Contract Telemetry</h3>
-                  <p className="text-[10px] text-zinc-500">Security audits, upgradeability parameters & deployed code</p>
-                </div>
-
-                <div className="space-y-2.5 text-xs font-mono">
-                  {[
-                    { key: "Contract Status", val: "Active Production", style: "text-emerald-400" },
-                    { key: "Verified Safe Bytecode", val: "Yes", style: "text-emerald-400" },
-                    { key: "Upgradeable Proxy", val: "Yes (Timelock 48h)", style: "text-purple-400" },
-                    { key: "Proxy Pattern Enabled", val: "Yes", style: "text-emerald-400" },
-                    { key: "Audited Production Build", val: "Yes (Certik + Consensys)", style: "text-emerald-400" },
-                    { key: "Mainnet Version Hash", val: "v4.8.2-Release", style: "text-blue-400" },
-                    { key: "Gas Optimization Factor", val: "98.9% Perfect", style: "text-emerald-400" }
-                  ].map((row, i) => (
-                    <div key={i} className="flex justify-between items-center py-1 border-b border-zinc-900/50">
-                      <span className="text-zinc-500">{row.key}</span>
-                      <span className={`font-semibold ${row.style}`}>{row.val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* QLOBAL ŞƏBƏKƏ COĞRAFİYASI */}
-              <div className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-5 space-y-4 relative overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-300 tracking-wider uppercase">Network Overview</h3>
-                    <p className="text-[10px] text-zinc-500">Live active server and validator cluster nodes mapped globally</p>
-                  </div>
-                  <span className="text-[10px] text-cyan-400 font-mono">3 Hubs</span>
-                </div>
-
-                {/* Aktiv şəbəkə xəritəsinin topoloji vizualı */}
-                <div className="relative h-32 bg-zinc-950 rounded border border-zinc-900 flex items-center justify-center overflow-hidden">
-                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#1e1b4b_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                  
-                  <svg className="w-full h-full text-zinc-800" viewBox="0 0 300 120" fill="none" stroke="currentColor">
-                    <path d="M 30,50 L 70,30 L 120,60 L 190,20 L 250,80 L 280,30" strokeWidth="1" strokeDasharray="3 3"/>
-                    <circle cx="30" cy="50" r="2" fill="#4f46e5" />
-                    <circle cx="70" cy="30" r="3" fill="#06b6d4" className="animate-ping" />
-                    <circle cx="70" cy="30" r="2.5" fill="#06b6d4" />
-                    <circle cx="120" cy="60" r="2" fill="#4f46e5" />
-                    <circle cx="190" cy="20" r="3.5" fill="#8b5cf6" className="animate-pulse" />
-                    <circle cx="250" cy="80" r="2" fill="#4f46e5" />
-                    <circle cx="280" cy="30" r="3" fill="#06b6d4" />
-                  </svg>
-
-                  <div className="absolute bottom-2 left-2 bg-black/80 px-2 py-1 rounded text-[9px] font-mono border border-zinc-800 text-zinc-400">
-                    S-MAIN-A: <span className="text-emerald-400">Operational</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                  <div className="bg-zinc-950 p-2 rounded border border-zinc-900">
-                    <span className="text-zinc-500 block">Total Staked</span>
-                    <span className="text-white font-bold font-mono">12.45B USDT</span>
-                  </div>
-                  <div className="bg-zinc-950 p-2 rounded border border-zinc-900">
-                    <span className="text-zinc-500 block">Inflation Rate</span>
-                    <span className="text-emerald-400 font-bold font-mono">2.34%</span>
-                  </div>
-                </div>
-              </div>
-
             </div>
 
           </div>
+        </div>
 
-          {/* SƏNƏDLƏŞDİRİLMİŞ AKTİV TRANZAKSİYALAR */}
-          <section className="bg-[#0b0e14] border border-zinc-800 rounded-xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-              <div>
-                <h3 className="text-xs font-bold text-slate-300 tracking-wider uppercase flex items-center space-x-1.5">
-                  <svg className="w-4.5 h-4.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                  <span>Real-time Platform Transactions Ledger</span>
-                </h3>
-                <p className="text-[10px] text-zinc-500">Live ledger reflecting production-level digital asset operations and validation states</p>
-              </div>
-              <span className="text-[9px] text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded font-mono border border-zinc-800/60">
-                Auto Updates Live
-              </span>
+        {/* TRANSACTIONS HISTORY */}
+        <div className="bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col backdrop-blur-md overflow-hidden">
+          <div className="p-4 border-b border-white/5 flex items-center justify-between bg-black/20">
+            <div className="flex items-center gap-2">
+              <History className="text-purple-400 w-5 h-5" />
+              <h2 className="text-sm font-semibold text-white">Tranzaksiya Tarixçəsi (Real-Time)</h2>
             </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs font-mono">
-                <thead>
-                  <tr className="border-b border-zinc-900 text-zinc-500 text-[10px] uppercase tracking-wider">
-                    <th className="py-2.5 px-3">Time</th>
-                    <th className="py-2.5 px-3">Block</th>
-                    <th className="py-2.5 px-3">Operation</th>
-                    <th className="py-2.5 px-3">Asset</th>
-                    <th className="py-2.5 px-3">Pool Target</th>
-                    <th className="py-2.5 px-3">Validator Node</th>
-                    <th className="py-2.5 px-3 text-right">Amount</th>
-                    <th className="py-2.5 px-3 text-center">Status</th>
+            <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-1 rounded-md border border-purple-500/20">
+              Total: {stats.tradesCount}
+            </span>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-wider text-gray-500 border-b border-white/5 bg-black/40">
+                  <th className="p-3 font-medium">Exec ID</th>
+                  <th className="p-3 font-medium">Asset</th>
+                  <th className="p-3 font-medium">Market Route</th>
+                  <th className="p-3 font-medium">Spread</th>
+                  <th className="p-3 font-medium">Trade Size</th>
+                  <th className="p-3 font-medium">Qazanc</th>
+                  <th className="p-3 font-medium text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="text-xs divide-y divide-white/5">
+                {history.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="p-8 text-center text-gray-600">Sistem aktivasiya gözləyir. Hələ heç bir əməliyyat yoxdur.</td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-900">
-                  {transactions.map((tx, idx) => (
-                    <tr 
-                      key={idx} 
-                      className={`hover:bg-zinc-900/40 transition-colors ${idx === 0 ? 'bg-blue-950/10' : ''}`}
-                    >
-                      <td className="py-3 px-3 text-zinc-400 text-[11px] whitespace-nowrap">{tx.time}</td>
-                      <td className="py-3 px-3 text-cyan-500 font-bold">{tx.block}</td>
-                      <td className="py-3 px-3 text-slate-200 font-medium whitespace-nowrap">{tx.operation}</td>
-                      <td className="py-3 px-3">
-                        <span className="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-bold text-slate-300">
-                          {tx.asset}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-zinc-400">{tx.pool}</td>
-                      <td className="py-3 px-3 text-zinc-500 text-[11px]">{tx.validator}</td>
-                      <td className={`py-3 px-3 text-right font-bold ${
-                        tx.amount.startsWith('+') ? 'text-emerald-400' : tx.amount.startsWith('-') ? 'text-rose-400' : 'text-slate-400'
-                      }`}>
-                        {tx.amount}
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                          {tx.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-        </main>
+                ) : (
+                  history.slice(0, 15).map((trade, idx) => (
+                    <HistoryRow key={trade.id} trade={trade} idx={idx} />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
       </div>
 
-      {/* SİSTEMİN DETALLI JURNAL / DEFEF KONSOLU */}
-      {showConsole && (
-        <div className="border-t border-zinc-800 bg-[#06080b] p-4 text-xs font-mono h-60 flex flex-col justify-between shrink-0 relative z-50">
-          <div className="flex items-center justify-between border-b border-zinc-900 pb-2 mb-2">
-            <span className="text-cyan-400 font-bold flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block animate-ping"></span>
-              <span>AVAE MAINNET PRODUCTION CORE DEPLOYMENT MOTOR CONSOLE</span>
-            </span>
-            <button 
-              onClick={() => setShowConsole(false)}
-              className="text-zinc-500 hover:text-slate-200 transition-colors"
-            >
-              [CLOSE]
-            </button>
-          </div>
-          
-          {/* Loqların Azərbaycan dilində izlənilmə pəncərəsi */}
-          <div className="flex-1 overflow-y-auto space-y-1.5 text-zinc-400 pr-4 custom-scrollbar bg-black/30 p-2.5 rounded border border-zinc-900/60">
-            {logs.map((log, i) => (
-              <div key={i} className="text-[11px] leading-relaxed select-text hover:bg-zinc-900/40 p-0.5 rounded">
-                <span className="text-zinc-600 mr-2">[{new Date().toLocaleTimeString()}]</span>
-                <span className={
-                  log.includes('[YENİ TRANZAKSİYA]') ? 'text-indigo-400' :
-                  log.includes('[İSTİFADƏÇİ ƏMRİ]') ? 'text-amber-400' :
-                  log.includes('optimal') ? 'text-emerald-400' : 'text-zinc-300'
-                }>{log}</span>
+      {/* MANUAL EXECUTION MODAL */}
+      {manualModal.isOpen && manualModal.opp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+          <div className="bg-[#0a0a0c] border border-gray-800 rounded-2xl w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col relative animate-fade-in">
+            <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-white/[0.02]">
+              <div className="flex items-center gap-2">
+                <Shield className="text-emerald-400 w-5 h-5" />
+                <h3 className="font-semibold text-white">Smart Contract İcrası</h3>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-2 pt-2 border-t border-zinc-900 flex justify-between text-[10px] text-zinc-500">
-            <span>SYS_MEM_CLEAN: TRUE</span>
-            <span>PRODUCTION_ACTIVE_EPOCH: 4122</span>
-            <span>THREADS: 18,452/18,452 ONLINE</span>
+              <button onClick={() => setManualModal({isOpen: false, opp: null, step: 0})} className="text-gray-500 hover:text-white transition-colors" disabled={manualModal.step > 0 && manualModal.step < 5}>✕</button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="flex items-center gap-3 bg-black/40 p-3 rounded-xl border border-white/5 mb-2">
+                 <CryptoLogo asset={manualModal.opp.asset} className="w-8 h-8" />
+                 <div>
+                    <div className="text-sm font-bold text-white">{manualModal.opp.asset}/USDT Arbitrajı</div>
+                    <div className="text-[10px] text-gray-400">{manualModal.opp.route.join(' → ')}</div>
+                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <ModalDetail label="Contract Address" value="0x7a25...b248" />
+                <ModalDetail label="Execution Hash" value={generateShortHash()} />
+                <ModalDetail label="Trade Size (Flash Loan)" value={formatMoney(manualModal.opp.estTradeSize)} />
+                <ModalDetail label="Real Spread" value={`${formatNum(manualModal.opp.spread, 3)}%`} valueColor="text-emerald-400" />
+                <ModalDetail label="Maks. Gözlənilən Qazanc" value={`+${formatMoney(Math.min(manualModal.opp.estProfit, TARGET_PROFIT - totalProfit))}`} valueColor="text-emerald-400 font-bold" />
+                <ModalDetail label="AI Confidence" value={`${formatNum(manualModal.opp.confidence)}%`} valueColor="text-emerald-400" />
+                <ModalDetail label="Buy Price (Low)" value={formatNum(manualModal.opp.buyPrice, manualModal.opp.asset === 'TRX' ? 4 : 2)} />
+                <ModalDetail label="Sell Price (High)" value={formatNum(manualModal.opp.sellPrice, manualModal.opp.asset === 'TRX' ? 4 : 2)} />
+              </div>
+              <div className="bg-black/40 border border-gray-800 rounded-xl p-4 mt-2">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs text-gray-400">Tranzaksiya Statusu</span>
+                  <span className="text-[10px] text-gray-500 font-mono">
+                    {manualModal.step === 0 ? 'Gözləyir' : manualModal.step === 1 ? 'İmzalanır...' : manualModal.step === 2 ? 'Validasiya...' : manualModal.step === 3 ? 'Blok Təsdiqi...' : manualModal.step === 4 ? 'Hesablaşma...' : 'Tamamlandı'}
+                  </span>
+                </div>
+                <div className="h-1.5 bg-gray-900 rounded-full overflow-hidden flex">
+                  <div className={`h-full bg-emerald-500 transition-all duration-500 ease-out`} style={{ width: `${(manualModal.step / 5) * 100}%` }}></div>
+                </div>
+                <div className="flex justify-between mt-3 px-1">
+                  {[1,2,3,4,5].map(s => (<div key={s} className={`w-2 h-2 rounded-full transition-all duration-300 ${manualModal.step >= s ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-gray-800'}`} />))}
+                </div>
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-800 bg-black/40 flex justify-end gap-3">
+              <button onClick={() => setManualModal({isOpen: false, opp: null, step: 0})} disabled={manualModal.step > 0 && manualModal.step < 5} className="px-4 py-2 text-xs text-gray-400 hover:text-white transition-colors">Ləğv et</button>
+              <button onClick={processManualSignature} disabled={manualModal.step > 0} className={`px-5 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all ${manualModal.step === 5 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' : manualModal.step > 0 ? 'bg-blue-500 text-white cursor-wait opacity-80' : 'bg-white text-black hover:bg-gray-200 shadow-[0_0_15px_rgba(255,255,255,0.2)]'}`}>
+                {manualModal.step === 5 ? <CheckCircle2 size={14}/> : manualModal.step > 0 ? <Activity size={14} className="animate-spin" /> : <Fingerprint size={14} />}
+                {manualModal.step === 5 ? 'Tamamlandı' : manualModal.step > 0 ? 'İcra Edilir...' : 'İmzalama & İcra Et'}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* RƏSMİ APARAT VE SƏYYAH SAYT SONLUĞU (FOOTER) */}
-      <footer className="border-t border-zinc-900 bg-black py-2.5 px-6 flex flex-col md:flex-row items-center justify-between text-[10px] font-mono text-zinc-500 relative z-40">
-        <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
-          <span className="flex items-center space-x-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-            <span>Mainnet Production Environment</span>
-          </span>
-          <span>Secured Liquidity Vaults Active</span>
-          <span>Production Build v4.8.2</span>
-          <span>Build Date: 2026.07.14</span>
-          <span>Engine: Live Production Engine</span>
-          <span>Target Cluster: AVAE Primary Cluster</span>
+      {/* RESET CONFIRMATION MODAL */}
+      {resetModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+           <div className="bg-[#0a0a0c] border border-gray-800 rounded-2xl w-full max-w-sm p-6 text-center shadow-2xl animate-fade-in">
+              <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+                 <AlertTriangle size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Sistemi Sıfırla?</h3>
+              <p className="text-sm text-gray-400 mb-6">Bütün mövcud qazanc, statistika, taymer və tarixçə qalıcı olaraq silinəcək və balans başlanğıc vəziyyətinə (50,000.00 USDT) qayıdacaq. Davam etmək istəyirsiniz?</p>
+              <div className="flex gap-3">
+                 <button onClick={() => setResetModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:bg-white/5 transition-all">Ləğv et</button>
+                 <button onClick={resetSystem} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]">Bəli, Sıfırla</button>
+              </div>
+           </div>
         </div>
-
-        <div className="flex items-center space-x-4 mt-2 md:mt-0">
-          <span className="flex items-center space-x-1 text-emerald-400">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-            <span>AES-256</span>
-          </span>
-          <span className="text-blue-400">TLS 1.3 Secure Channels</span>
-        </div>
-      </footer>
-
+      )}
+      
+      <style dangerouslySetInnerHTML={{__html: `.scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; } @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } } .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }`}} />
     </div>
   );
 }
