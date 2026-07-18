@@ -7,8 +7,8 @@ export default function LoginPage({ onLoginSuccess }) {
   const [error, setError] = useState(false);
 
   // Ваши кастомные данные доступа
-  const TARGET_LOGIN = "Orxan";
-  const TARGET_PASSWORD = "qwerty2026";
+  const TARGET_LOGIN = "Ocoshy";
+  const TARGET_PASSWORD = "Bot474747";
 
   // Определяет публичный IPv4 устройства и отправляет его на сервер,
   // чтобы тот записал адрес в отдельный файл (ip-log.txt).

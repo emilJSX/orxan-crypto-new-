@@ -7,9 +7,9 @@ import {
   Wifi, WifiOff, RotateCcw, Timer
 } from 'lucide-react';
 
-// --- Constants & Targets ---
-const SIMULATION_DURATION = 24 * 60 * 60 * 1000; // 24 hours (ms)
-const INITIAL_BALANCE = 306002.71;
+// --- Sabitlər və Hədəflər ---
+const SIMULATION_DURATION = 24 * 60 * 60 * 1000; // 24 saat (ms)
+const INITIAL_BALANCE = 50000.00;
 const TARGET_PROFIT = 49627.00;
 const MAX_BALANCE = INITIAL_BALANCE + TARGET_PROFIT;
 
@@ -30,7 +30,7 @@ const ASSET_LOGOS = {
   FALLBACK: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=029'
 };
 
-// --- Helper Functions ---
+// --- Köməkçi Funksiyalar ---
 const roundMoney = (value) => Math.round((value + Number.EPSILON) * 100) / 100;
 const formatMoney = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(val).replace('$', '') + ' USDT';
 const formatNum = (val, dec = 2) => new Intl.NumberFormat('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(val);
@@ -41,9 +41,9 @@ const rand = (min, max) => Math.random() * (max - min) + min;
 const randInt = (min, max) => Math.floor(rand(min, max));
 const randChoice = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-// --- Sub Components (Optimized with React.memo) ---
+// --- Alt Komponentlər (Optimized with React.memo) ---
 
-// Premium 24-hour timer card updated second-by-second
+// Saniyəbəsaniyə yenilənən premium 24 saat taymer kartı
 const TimerCard = memo(({ accumulatedTime, lastStartedAt, isRunning, isTargetReached }) => {
   const [now, setNow] = useState(Date.now());
   
@@ -69,10 +69,10 @@ const TimerCard = memo(({ accumulatedTime, lastStartedAt, isRunning, isTargetRea
       <div className="flex justify-between items-center mb-1">
         <p className="text-[10px] text-gray-500 uppercase tracking-wider flex items-center gap-1">
           <Timer size={10} className={isRunning ? 'text-blue-400 animate-pulse' : 'text-gray-500'} /> 
-          24-Hour Mode
+          24 Saatlıq Rejim
         </p>
         <span className={`text-[9px] px-1.5 py-0.5 rounded border ${isTargetReached ? 'border-emerald-500/20 text-emerald-400 bg-emerald-500/10' : isRunning ? 'border-blue-500/20 text-blue-400 bg-blue-500/10' : 'border-yellow-500/20 text-yellow-500 bg-yellow-500/10'}`}>
-          {isTargetReached ? 'Completed' : isRunning ? 'Active' : 'Paused'}
+          {isTargetReached ? 'Tamamlandı' : isRunning ? 'Aktiv' : 'Dayandırılıb'}
         </span>
       </div>
       <div className="flex justify-between items-end">
@@ -159,23 +159,23 @@ const HistoryRow = memo(({ trade, idx }) => {
           <td colSpan="7" className="p-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-[10px]">
               <div className="space-y-2">
-                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Basic Information</h4>
+                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Əsas Məlumatlar</h4>
                 <div className="flex justify-between"><span className="text-gray-500">Transaction ID:</span> <span className="font-mono text-gray-300">{trade.hash.substring(0,12)}...</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Execution ID:</span> <span className="font-mono text-gray-300">{trade.id}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Date:</span> <span className="font-mono text-gray-300">{new Date(trade.timestamp).toLocaleTimeString()}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Execution Source:</span> <span className="text-blue-400">{trade.source}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Tarix:</span> <span className="font-mono text-gray-300">{new Date(trade.timestamp).toLocaleTimeString()}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">İcra Mənbəyi:</span> <span className="text-blue-400">{trade.source}</span></div>
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Price & Value</h4>
-                <div className="flex justify-between"><span className="text-gray-500">Buy Price:</span> <span className="font-mono text-gray-300">{formatNum(trade.buyPrice, trade.asset === 'TRX' || trade.asset === 'ADA' || trade.asset === 'XRP' ? 4 : 2)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Sell Price:</span> <span className="font-mono text-gray-300">{formatNum(trade.sellPrice, trade.asset === 'TRX' || trade.asset === 'ADA' || trade.asset === 'XRP' ? 4 : 2)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Network Fee:</span> <span className="font-mono text-red-400">-{trade.networkFee.toFixed(2)} USDT</span></div>
+                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Qiymət & Dəyər</h4>
+                <div className="flex justify-between"><span className="text-gray-500">Alış Qiyməti:</span> <span className="font-mono text-gray-300">{formatNum(trade.buyPrice, trade.asset === 'TRX' || trade.asset === 'ADA' || trade.asset === 'XRP' ? 4 : 2)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Satış Qiyməti:</span> <span className="font-mono text-gray-300">{formatNum(trade.sellPrice, trade.asset === 'TRX' || trade.asset === 'ADA' || trade.asset === 'XRP' ? 4 : 2)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Şəbəkə Haqqı:</span> <span className="font-mono text-red-400">-{trade.networkFee.toFixed(2)} USDT</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">ROI:</span> <span className="font-mono text-emerald-400">+{formatNum(trade.roi)}%</span></div>
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Technical Details</h4>
+                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">Texniki Cəhətlər</h4>
                 <div className="flex justify-between"><span className="text-gray-500">Execution Time:</span> <span className="font-mono text-gray-300">{trade.execTime} ms</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Latency:</span> <span className="font-mono text-gray-300">{trade.latency} ms</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Liquidity:</span> <span className="font-mono text-gray-300">{formatNum(trade.liquidity, 1)}M USDT</span></div>
@@ -183,10 +183,10 @@ const HistoryRow = memo(({ trade, idx }) => {
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">AI Analysis & Smart Route</h4>
+                <h4 className="text-gray-400 font-semibold uppercase border-b border-white/5 pb-1 mb-2">AI Analizi & Smart Route</h4>
                 <div className="flex justify-between"><span className="text-gray-500">Confidence:</span> <span className="font-mono text-emerald-400">{formatNum(trade.confidence, 1)}%</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Risk Score:</span> <span className="font-mono text-yellow-400">{formatNum(trade.riskScore, 1)}/10</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Route:</span> <span className="text-gray-300 text-right max-w-[80px] truncate">{trade.route.join('→')}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Marşrut:</span> <span className="text-gray-300 text-right max-w-[80px] truncate">{trade.route.join('→')}</span></div>
                 <div className="flex justify-between text-[9px] mt-1 pt-1 border-t border-white/5">
                   <span className={`${trade.darkPool ? 'text-purple-400' : 'text-gray-600'}`}>{trade.darkPool ? 'Dark Pool Used' : 'No Dark Pool'}</span>
                   <span className={`${trade.mev ? 'text-orange-400' : 'text-gray-600'}`}>{trade.mev ? 'MEV Protection' : 'Standard'}</span>
@@ -200,62 +200,52 @@ const HistoryRow = memo(({ trade, idx }) => {
   );
 });
 
-// --- Main Component ---
+// --- Əsas Komponent ---
 export default function App() {
   const isInitialized = useRef(false);
 
-  // --- SYSTEM STATE AND TIMER STATES ---
+  // --- SİSTEM VƏZİYYƏTİ VƏ TAYMER STATE-LƏRİ ---
   const [accumulatedTime, setAccumulatedTime] = useState(0); 
   const [lastStartedAt, setLastStartedAt] = useState(() => Date.now());  
-  // Initially false as trading is locked
-  const [isRunning, setIsRunning] = useState(false);
+  const [isRunning, setIsRunning] = useState(true);
   const [isTargetReached, setIsTargetReached] = useState(false);
   const [apiConnected, setApiConnected] = useState(false);
   
-  // --- FINANCIAL STATE ---
+  // --- MALİYYƏ VƏZİYYƏTİ ---
   const [totalProfit, setTotalProfit] = useState(0);
   const balance = roundMoney(INITIAL_BALANCE + totalProfit);
   
-  // --- STATISTICS ---
+  // --- STATİSTİKA ---
   const [stats, setStats] = useState({
     tradesCount: 0, winRate: 100, avgSpread: 0.32, avgProfit: 0, bestTrade: 0,
     largestVolume: 0, executionSpeed: 450, latency: 12, aiConfidence: 98.2,
     cpuLoad: 24, memory: 45, gas: 15
   });
 
-  // --- DATA ---
+  // --- MƏLUMATLAR ---
   const [marketData, setMarketData] = useState({});
   const [opportunities, setOpportunities] = useState([]);
   const [history, setHistory] = useState([]);
-  
-  // Terminal logs for initial security warning messages
-  const [logs, setLogs] = useState([
-    { id: 6, time: new Date(), text: 'Trading temporarily restricted until verification is completed.', type: 'warning' },
-    { id: 5, time: new Date(), text: '306,006.71 USDT secured inside smart contract.', type: 'success' },
-    { id: 4, time: new Date(), text: 'Device and network verification pending.', type: 'warning' },
-    { id: 3, time: new Date(), text: '4 sessions linked to shared Wi-Fi or common IP usage.', type: 'info' },
-    { id: 2, time: new Date(), text: '8 active sessions detected.', type: 'warning' },
-    { id: 1, time: new Date(), text: 'Security review initiated.', type: 'warning' }
-  ]);
+  const [logs, setLogs] = useState([]);
   
   const [manualModal, setManualModal] = useState({ isOpen: false, opp: null, step: 0 });
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
 
-  // Refs to avoid re-render issues
+  // Re-render problemlərindən qaçmaq üçün refs
   const stateRef = useRef({ accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit });
   useEffect(() => {
     stateRef.current = { accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit };
   }, [accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit]);
 
   const engineSteps = useMemo(() => [
-    { name: 'Opportunity Scanner', log: 'Scanning real-time opportunities...' },
-    { name: 'Route Optimizer', log: 'AI selected optimal cross-exchange route' },
-    { name: 'Liquidity Scanner', log: 'Volumes and liquidity checked' },
-    { name: 'AI Routing', log: 'Smart Routing API confirmed' },
-    { name: 'Market Analyzer', log: 'Spread differential confirmed' },
-    { name: 'Spread Detector', log: 'Order book analysis completed' },
-    { name: 'Order Executor', log: 'Flash liquidity allocated & Executed' }
+    { name: 'Opportunity Scanner', log: 'Real-time fürsətlər skan edilir...' },
+    { name: 'Route Optimizer', log: 'AI optimal birjalarası marşrutu seçdi' },
+    { name: 'Liquidity Scanner', log: 'Həcmlər və likvidlik yoxlanılır' },
+    { name: 'AI Routing', log: 'Smart Routing API təsdiqləndi' },
+    { name: 'Market Analyzer', log: 'Spread differensialı təsdiqləndi' },
+    { name: 'Spread Detector', log: 'Order book təhlili tamamlandı' },
+    { name: 'Order Executor', log: 'Flash liquidity ayrıldı & İcra edildi' }
   ], []);
 
   const addLog = useCallback((text, type = 'info') => {
@@ -268,8 +258,7 @@ export default function App() {
   // --- LOCALSTORAGE PERSISTENCE ---
   useEffect(() => {
     if (!isInitialized.current) {
-      // New key for the locked system state
-      const savedData = localStorage.getItem('quantumArbState_v6');
+      const savedData = localStorage.getItem('quantumArbState_v4');
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData, (key, value) => {
@@ -280,19 +269,34 @@ export default function App() {
           let accTime = parsed.accumulatedTime || 0;
           let isDone = parsed.isTargetReached || false;
           let profit = parsed.totalProfit || 0;
+          let running = parsed.isRunning || false;
           
+          // Offline vaxtı aktiv hesab etmək (əgər açıq qalıbsa)
+          if (running && parsed.lastStartedAt && !isDone) {
+             const offlinePassed = Date.now() - parsed.lastStartedAt;
+             accTime += offlinePassed;
+             if (accTime >= SIMULATION_DURATION) {
+                accTime = SIMULATION_DURATION;
+                isDone = true;
+                running = false;
+                profit = TARGET_PROFIT;
+             }
+          }
+
           setAccumulatedTime(accTime);
           setTotalProfit(profit);
           setIsTargetReached(isDone);
-          // Force false as system is in security review
-          setIsRunning(false); 
-          setLastStartedAt(null);
+          setIsRunning(running && !isDone);
+          setLastStartedAt(running && !isDone ? Date.now() : null);
           
           if (parsed.history) setHistory(parsed.history);
           if (parsed.stats) setStats(parsed.stats);
-          if (parsed.logs && parsed.logs.length > 0) setLogs(parsed.logs);
+          if (parsed.logs) setLogs(parsed.logs);
           
+          addLog('Sistem bərpa edildi. Real məlumatlar sinxronlaşdırılır...', 'info');
         } catch(e) { console.error('LocalStorage parse error', e); }
+      } else {
+        addLog('Sistem hazır vəziyyətdədir. Mühərrik avtomatik işə düşdü.', 'info');
       }
       isInitialized.current = true;
     }
@@ -304,11 +308,11 @@ export default function App() {
           accumulatedTime, lastStartedAt, isRunning, isTargetReached,
           totalProfit, history, stats, logs
        };
-       localStorage.setItem('quantumArbState_v6', JSON.stringify(stateToSave));
+       localStorage.setItem('quantumArbState_v4', JSON.stringify(stateToSave));
     }
   }, [accumulatedTime, lastStartedAt, isRunning, isTargetReached, totalProfit, history, stats, logs]);
 
-  // --- REACHING TARGET FUNCTION ---
+  // --- HƏDƏFƏ ÇATMA FUNKSİYASI ---
   const handleTargetReached = useCallback(() => {
     if (stateRef.current.isTargetReached) return;
     setIsTargetReached(true);
@@ -316,10 +320,10 @@ export default function App() {
     setAccumulatedTime(SIMULATION_DURATION);
     setLastStartedAt(null);
     setTotalProfit(TARGET_PROFIT);
-    addLog(`24-HOUR TARGET COMPLETED — Total profit: 49,627.00 USDT | Final balance: ${formatNum(MAX_BALANCE)} USDT`, 'warning');
+    addLog(`24 SAATLIQ HƏDƏF TAMAMLANDI — Ümumi qazanc: 49,627.00 USDT | Yekun balans: 99,627.00 USDT`, 'warning');
   }, [addLog]);
 
-  // --- TIME MONITOR (Every Second) ---
+  // --- VAxt NƏZARƏTÇİSİ (Hər Saniyə) ---
   useEffect(() => {
     if (!isRunning || isTargetReached) return;
     const checker = setInterval(() => {
@@ -361,7 +365,7 @@ export default function App() {
       }
     } catch (error) {
       if (error.name !== 'AbortError') {
-        if (apiConnected) { setApiConnected(false); addLog('API connection lost. Fallback mode activated.', 'warning'); }
+        if (apiConnected) { setApiConnected(false); addLog('API bağlantısı kəsildi. Fallback rejimi aktivdir.', 'warning'); }
         const fallbackData = {};
         ASSETS.forEach(asset => {
             const base = asset === 'BTC' ? 68000 : asset === 'ETH' ? 3500 : asset === 'SOL' ? 150 : 1;
@@ -406,7 +410,7 @@ export default function App() {
 
       const middleEx = randChoice(EXCHANGES.filter(e => e !== buyEx.name && e !== sellEx.name));
       const trueSpread = ((sellEx.price - buyEx.price) / buyEx.price) * 100;
-      const estTradeSize = rand(15000, 120000); // Increased size for larger profits
+      const estTradeSize = rand(15000, 120000); // Daha böyük qazanclar üçün ölçü artırıldı
       const estProfit = estTradeSize * (trueSpread / 100);
 
       return {
@@ -460,7 +464,7 @@ export default function App() {
       avgSpread: ((prev.avgSpread * prev.tradesCount) + opp.spread) / (prev.tradesCount + 1)
     }));
 
-    addLog(`Profit: +${formatMoney(generatedProfit)} | Route: ${opp.route.join(' → ')} (${opp.asset})`, 'success');
+    addLog(`Qazanc: +${formatMoney(generatedProfit)} | Marşrut: ${opp.route.join(' → ')} (${opp.asset})`, 'success');
   }, [opportunities, addLog]);
 
   // --- AUTOMATIC AI TRADING CYCLE (TRAJECTORY CONTROL) ---
@@ -502,8 +506,8 @@ export default function App() {
         if (!isActive || !stateRef.current.isRunning) return;
         setCurrentStepIndex(i);
         let customLog = engineSteps[i].log;
-        if (i === 1) customLog = `AI selected optimal route: ${opportunities[0].route.join(' → ')}`;
-        if (i === 4) customLog = `Spread confirmed: ${formatNum(opportunities[0].spread, 3)}%`;
+        if (i === 1) customLog = `AI optimal marşrutu seçdi: ${opportunities[0].route.join(' → ')}`;
+        if (i === 4) customLog = `Spread təsdiqləndi: ${formatNum(opportunities[0].spread, 3)}%`;
         addLog(customLog, 'process');
         await new Promise(r => setTimeout(r, randInt(250, 450)));
       }
@@ -531,23 +535,31 @@ export default function App() {
     };
   }, [isRunning, isTargetReached, opportunities, engineSteps, executeTrade, addLog]);
 
+  // --- BUTTON HANDLERS ---
+  const toggleRunning = () => {
+     if (isTargetReached) return;
+     if (isRunning) {
+        setAccumulatedTime(prev => prev + (Date.now() - lastStartedAt));
+        setLastStartedAt(null);
+        setIsRunning(false);
+        addLog('Sistem istifadəçi tərəfindən dayandırıldı (Pause).', 'warning');
+     } else {
+        setLastStartedAt(Date.now());
+        setIsRunning(true);
+        addLog('Sistem aktivləşdirildi. Mühərrik işə düşür...', 'success');
+     }
+  };
+
   const resetSystem = () => {
-     localStorage.removeItem('quantumArbState_v6');
+     localStorage.removeItem('quantumArbState_v4');
      setAccumulatedTime(0);
-     setLastStartedAt(null);
-     setIsRunning(false);
+     setLastStartedAt(Date.now());
+     setIsRunning(true);
      setIsTargetReached(false);
      setTotalProfit(0);
      setHistory([]);
      setStats({ tradesCount: 0, winRate: 100, avgSpread: 0.32, avgProfit: 0, bestTrade: 0, largestVolume: 0, executionSpeed: 450, latency: 12, aiConfidence: 98.2, cpuLoad: 24, memory: 45, gas: 15 });
-     setLogs([
-        { id: 6, time: new Date(), text: 'Trading temporarily restricted until verification is completed.', type: 'warning' },
-        { id: 5, time: new Date(), text: '306,006.71 USDT secured inside smart contract.', type: 'success' },
-        { id: 4, time: new Date(), text: 'Device and network verification pending.', type: 'warning' },
-        { id: 3, time: new Date(), text: '4 sessions linked to shared Wi-Fi or common IP usage.', type: 'info' },
-        { id: 2, time: new Date(), text: '8 active sessions detected.', type: 'warning' },
-        { id: 1, time: new Date(), text: 'Security review initiated.', type: 'warning' }
-     ]);
+     setLogs([{ id: 1, time: new Date(), text: 'Sistem tam sıfırlandı. Mühərrik avtomatik işə düşür...', type: 'info' }]);
      setResetModalOpen(false);
   };
 
@@ -557,9 +569,9 @@ export default function App() {
   const processManualSignature = async () => {
     if (manualModal.step > 0) return;
     const steps = [
-      { s: 1, delay: 800, log: 'Waiting for transaction signature...' }, { s: 2, delay: 1200, log: 'Verified by node (Validation)...' },
-      { s: 3, delay: 1500, log: 'Waiting for blockchain confirmation...' }, { s: 4, delay: 1000, log: 'Processing settlement...' },
-      { s: 5, delay: 500, log: 'Manual transaction completed successfully.' }
+      { s: 1, delay: 800, log: 'Tranzaksiya imzalama gözləyir...' }, { s: 2, delay: 1200, log: 'Node tərəfindən yoxlanılır (Validation)...' },
+      { s: 3, delay: 1500, log: 'Blokçeyn təsdiqi gözlənilir...' }, { s: 4, delay: 1000, log: 'Hesablaşma (Settlement) aparılır...' },
+      { s: 5, delay: 500, log: 'Manual tranzaksiya uğurla tamamlandı.' }
     ];
     for (const step of steps) {
       setManualModal(prev => ({ ...prev, step: step.s }));
@@ -585,7 +597,7 @@ export default function App() {
         {/* HEADER */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/[0.02] border border-white/5 p-4 rounded-2xl backdrop-blur-xl relative">
           
-          <button onClick={() => setResetModalOpen(true)} className="absolute top-4 right-4 text-gray-500 hover:text-red-400 transition-colors p-2 bg-white/5 rounded-lg border border-white/5 md:hidden" title="Reset System">
+          <button onClick={() => setResetModalOpen(true)} className="absolute top-4 right-4 text-gray-500 hover:text-red-400 transition-colors p-2 bg-white/5 rounded-lg border border-white/5 md:hidden" title="Sistemi Sıfırla">
              <RotateCcw size={14} />
           </button>
 
@@ -599,7 +611,7 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2">
                  <h1 className="text-xl font-bold text-white tracking-wide">QUANTUM<span className="text-emerald-400">ARB</span></h1>
-                 <button onClick={() => setResetModalOpen(true)} className="hidden md:flex text-gray-500 hover:text-red-400 transition-colors p-1.5 bg-white/5 rounded-md border border-white/5" title="Reset System">
+                 <button onClick={() => setResetModalOpen(true)} className="hidden md:flex text-gray-500 hover:text-red-400 transition-colors p-1.5 bg-white/5 rounded-md border border-white/5" title="Sistemi Sıfırla">
                     <RotateCcw size={12} />
                  </button>
               </div>
@@ -618,80 +630,31 @@ export default function App() {
             <TimerCard accumulatedTime={accumulatedTime} lastStartedAt={lastStartedAt} isRunning={isRunning} isTargetReached={isTargetReached} />
 
             <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-2 flex-1 md:flex-none flex flex-col justify-center">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wider">Current Balance</p>
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider">Cari Balans</p>
               <p className="text-lg font-mono font-bold text-white">{formatMoney(balance)}</p>
             </div>
             <div className="bg-emerald-900/20 border border-emerald-500/20 rounded-xl px-4 py-2 flex-1 md:flex-none flex flex-col justify-center">
-              <p className="text-[10px] text-emerald-400/80 uppercase tracking-wider">Total Profit</p>
+              <p className="text-[10px] text-emerald-400/80 uppercase tracking-wider">Ümumi Qazanc</p>
               <p className="text-lg font-mono font-bold text-emerald-400">+{formatMoney(totalProfit)}</p>
             </div>
-            
-            {/* Trading Button - Temporarily restricted for security reasons */}
             <button 
-              disabled={true}
-              title="Active device and network session verification must be completed to start trading."
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl font-medium transition-all duration-300 shadow-lg bg-orange-500/10 text-orange-400 border border-orange-500/30 cursor-not-allowed"
+              onClick={toggleRunning}
+              disabled={isTargetReached || !hasData}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl font-medium transition-all duration-300 shadow-lg ${
+                isTargetReached 
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  : isRunning 
+                    ? 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20' 
+                    : !hasData 
+                      ? 'bg-emerald-900/50 text-emerald-700 cursor-wait'
+                      : 'bg-emerald-500 text-black hover:bg-emerald-400 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]'
+              }`}
             >
-              <Lock size={18} />
-              Security Verification Pending
+              {isTargetReached ? <CheckCircle2 size={18} /> : isRunning ? <StopCircle size={18} /> : <Play size={18} />}
+              {isTargetReached ? '24 SAAT TAMAMLANDI' : isRunning ? 'Sistemi Dayandır' : !hasData ? 'Yüklənir...' : 'Avto Start'}
             </button>
           </div>
         </header>
-
-        {/* NEW SECURITY WARNING PANEL */}
-        <div className="bg-[#1a0f00]/40 border border-orange-500/30 rounded-2xl p-5 md:p-6 backdrop-blur-md relative overflow-hidden">
-          <div className="flex items-center gap-3 mb-4 border-b border-orange-500/20 pb-4">
-             <AlertTriangle className="text-orange-500 w-6 h-6" />
-             <h2 className="text-lg font-bold text-orange-400">Important Security Notice</h2>
-          </div>
-          <div className="text-sm text-gray-300 space-y-4 mb-6 leading-relaxed">
-             <p>Dear User,</p>
-             <p>The amount of <strong>306,006.71 USDT</strong> is currently held in a protected smart contract balance within the system and is not active for trading operations until the security verification is completed.</p>
-             <p>The security system has recorded logins from a total of <strong>8 different devices or user sessions</strong> over the same internet connection and IP address.</p>
-             <p>Based on the initial check, 4 of these logins may have been recorded under the same IP address as a result of users unknowingly connecting to an active Wi-Fi network on another person's phone.</p>
-             <p>Other logins may be due to the following technical reasons:</p>
-             <ul className="list-disc pl-5 space-y-1 text-gray-400">
-               <li>Using the same home, office, or public Wi-Fi network</li>
-               <li>The phone automatically connecting to a previously saved Wi-Fi network</li>
-               <li>Multiple devices using the same internet connection via a mobile hotspot</li>
-               <li>Using a VPN, proxy, or carrier-grade shared IP address</li>
-               <li>Leaving the application open on multiple phones or browsers</li>
-               <li>Changing devices and leaving the old session active in the system</li>
-               <li>Using the same account credentials on multiple devices</li>
-               <li>The network providing a shared IP via a NAT or CGNAT system</li>
-             </ul>
-             <p>This situation does not automatically confirm unauthorized use of the account. However, for financial security purposes, all active sessions, devices, and network information must be verified.</p>
-             <p>Until the verification is complete, the <strong>306,006.71 USDT</strong> balance will be protected within the smart contract and will not be available for transfer, withdrawal, or trading operations.</p>
-             <p>Once network and device logins are clarified, active sessions are confirmed, and the security verification is complete, trading functions can be reactivated.</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-             <div className="bg-black/40 border border-white/5 rounded-xl p-3">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1"><Shield size={12}/> Smart Contract Status</div>
-                <div className="text-sm font-semibold text-emerald-400">Funds Secured</div>
-             </div>
-             <div className="bg-black/40 border border-white/5 rounded-xl p-3">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1"><DollarSign size={12}/> Protected Balance</div>
-                <div className="text-sm font-mono font-semibold text-white">306,006.71 USDT</div>
-             </div>
-             <div className="bg-black/40 border border-white/5 rounded-xl p-3">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1"><Wifi size={12}/> Detected Sessions</div>
-                <div className="text-sm font-mono font-semibold text-white">8</div>
-             </div>
-             <div className="bg-black/40 border border-white/5 rounded-xl p-3">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1"><Wifi size={12}/> Shared Network Sessions</div>
-                <div className="text-sm font-mono font-semibold text-white">4</div>
-             </div>
-             <div className="bg-black/40 border border-white/5 rounded-xl p-3">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1"><Activity size={12}/> Trading Status</div>
-                <div className="text-sm font-semibold text-orange-400">Temporarily Restricted</div>
-             </div>
-             <div className="bg-black/40 border border-white/5 rounded-xl p-3">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1"><Lock size={12}/> Security Review</div>
-                <div className="text-sm font-semibold text-orange-400">In Progress</div>
-             </div>
-          </div>
-        </div>
 
         {/* SCHEDULED EXECUTION WINDOW */}
         <div className="bg-[#0a0a0c]/80 border border-white/5 rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 backdrop-blur-md font-mono text-xs shadow-lg">
@@ -701,7 +664,7 @@ export default function App() {
             </div>
             <div>
               <div className="text-gray-500 text-[10px] tracking-widest uppercase mb-0.5">Scheduled Execution Window</div>
-              <div className="text-gray-300">Trading Transaction - Hash <a href="https://etherscan.io/tx/0x53683e2dbfb1e0775738762d730d824031f8df3bbea59076793791149b1d6f95" target="_blank" rel="noreferrer" className="text-blue-400 font-semibold hover:underline">0x536....6f95</a></div>
+              <div className="text-gray-300">Trading engine activation: <span className="text-blue-400 font-semibold">13/07/2026 — 18:00</span></div>
             </div>
           </div>
           <div className="flex items-center gap-2 bg-white/[0.02] px-3 py-1.5 rounded border border-white/5">
@@ -716,27 +679,27 @@ export default function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           
-          {/* LEFT SIDE (Stats & Scanner) */}
+          {/* SOL TƏRƏF (Stats & Scanner) */}
           <div className="lg:col-span-2 space-y-4 md:space-y-6">
             
             {/* STATS GRID */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard title="Win Rate" value={`${stats.tradesCount === 0 ? 100 : formatNum((stats.tradesCount / (stats.tradesCount + Math.floor(stats.tradesCount * 0.2))) * 100, 1)}%`} icon={<Crosshair size={14} />} color="text-blue-400" />
-              <StatCard title="Successful Trades" value={stats.tradesCount} icon={<CheckCircle2 size={14} />} color="text-emerald-400" />
-              <StatCard title="Daily ROI" value={`+${formatNum((totalProfit/INITIAL_BALANCE)*100)}%`} icon={<TrendingUp size={14} />} color="text-emerald-400" />
-              <StatCard title="Best Profit" value={formatMoney(stats.bestTrade)} icon={<DollarSign size={14} />} color="text-purple-400" />
+              <StatCard title="Uğurlu Əməliyyat" value={stats.tradesCount} icon={<CheckCircle2 size={14} />} color="text-emerald-400" />
+              <StatCard title="Gündəlik ROI" value={`+${formatNum((totalProfit/INITIAL_BALANCE)*100)}%`} icon={<TrendingUp size={14} />} color="text-emerald-400" />
+              <StatCard title="Ən Yaxşı Qazanc" value={formatMoney(stats.bestTrade)} icon={<DollarSign size={14} />} color="text-purple-400" />
               
-              <StatCard title="Avg. Spread" value={`${formatNum(stats.avgSpread, 3)}%`} icon={<ArrowRightLeft size={14} />} />
-              <StatCard title="Execution Speed" value={`${stats.executionSpeed} ms`} icon={<Zap size={14} />} />
-              <StatCard title="AI Confidence" value={`${formatNum(stats.aiConfidence)}%`} icon={<Cpu size={14} />} color={stats.aiConfidence > 97 ? "text-emerald-400" : "text-yellow-400"} />
-              <StatCard title="Network Latency" value={`${stats.latency} ms`} icon={<Globe size={14} />} />
+              <StatCard title="Ort. Spread" value={`${formatNum(stats.avgSpread, 3)}%`} icon={<ArrowRightLeft size={14} />} />
+              <StatCard title="İcra Sürəti" value={`${stats.executionSpeed} ms`} icon={<Zap size={14} />} />
+              <StatCard title="AI İnamı" value={`${formatNum(stats.aiConfidence)}%`} icon={<Cpu size={14} />} color={stats.aiConfidence > 97 ? "text-emerald-400" : "text-yellow-400"} />
+              <StatCard title="Şəbəkə Gecikməsi" value={`${stats.latency} ms`} icon={<Globe size={14} />} />
             </div>
 
             {/* ENGINE VISUALIZATION */}
             <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 sm:p-5 backdrop-blur-md relative overflow-hidden">
               <div className="flex items-center gap-2 mb-4">
                 <Cpu className="text-emerald-500 w-5 h-5" />
-                <h2 className="text-sm font-semibold text-white">AI Real-Time Engine</h2>
+                <h2 className="text-sm font-semibold text-white">AI Real-Time Mühərriki</h2>
                 {isRunning && <span className="ml-auto flex h-2 w-2 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -785,7 +748,7 @@ export default function App() {
                 {!hasData ? (
                    <div className="flex flex-col items-center justify-center h-full text-gray-500 space-y-3 py-10">
                       <Activity className="w-8 h-8 animate-spin text-emerald-500/50" />
-                      <p className="text-xs">Synchronizing market data...</p>
+                      <p className="text-xs">Bazar məlumatları sinxronlaşdırılır...</p>
                    </div>
                 ) : (
                   opportunities.map((opp) => (
@@ -811,17 +774,17 @@ export default function App() {
 
                         <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 sm:gap-6 w-full sm:w-auto">
                           <div className="text-left sm:text-right flex-1 sm:flex-none">
-                            <p className="text-[10px] text-gray-500">Real Spread / Profit</p>
+                            <p className="text-[10px] text-gray-500">Real Spread / Qazanc</p>
                             <p className="text-sm font-mono font-bold text-emerald-400">
                               {formatNum(opp.spread, 3)}% <span className="text-gray-600 font-sans font-normal mx-1">|</span> +{formatMoney(opp.estProfit)}
                             </p>
                           </div>
                           <button 
-                            disabled={true}
-                            title="Temporarily restricted"
-                            className="w-full sm:w-auto px-4 py-2 bg-white/5 text-gray-500 text-xs font-medium rounded-lg border border-white/10 opacity-30 cursor-not-allowed flex items-center justify-center gap-1 whitespace-nowrap"
+                            onClick={() => handleManualExecute(opp)}
+                            disabled={isRunning || isTargetReached}
+                            className="w-full sm:w-auto px-4 py-2 bg-white/5 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg border border-white/10 hover:border-emerald-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1 whitespace-nowrap"
                           >
-                            <PenTool size={12} /> Manual Execution
+                            <PenTool size={12} /> Manual İcra
                           </button>
                         </div>
                       </div>
@@ -853,7 +816,7 @@ export default function App() {
 
           </div>
 
-          {/* RIGHT SIDE (Terminal & System Stats) */}
+          {/* SAĞ TƏRƏF (Terminal & System Stats) */}
           <div className="space-y-4 md:space-y-6">
             
             {/* TERMINAL */}
@@ -885,18 +848,18 @@ export default function App() {
             {/* SYSTEM STATUS MINIMAL */}
             <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 backdrop-blur-md">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Server size={14} /> Hardware & Network
+                <Server size={14} /> Təchizat & Şəbəkə
               </h3>
               <div className="space-y-3">
-                <ProgressBar label="CPU Engine Load" value={stats.cpuLoad} color="bg-blue-500" />
-                <ProgressBar label="RAM Usage" value={stats.memory} color="bg-purple-500" />
-                <ProgressBar label="Network Congestion (Gas)" value={stats.gas} max={100} color="bg-orange-500" suffix=" Gwei" />
+                <ProgressBar label="CPU Mühərrik Yükü" value={stats.cpuLoad} color="bg-blue-500" />
+                <ProgressBar label="Operativ Yaddaş" value={stats.memory} color="bg-purple-500" />
+                <ProgressBar label="Şəbəkə Sıxlığı (Gas)" value={stats.gas} max={100} color="bg-orange-500" suffix=" Gwei" />
                 <div className="pt-2 flex justify-between text-[10px] text-gray-500">
                   <span className="flex items-center gap-1">
                     <CheckCircle2 size={10} className={apiConnected ? "text-emerald-500" : "text-yellow-500"}/> 
-                    Binance API: {apiConnected ? 'Active' : 'Loading'}
+                    Binance API: {apiConnected ? 'Aktiv' : 'Yüklənir'}
                   </span>
-                  <span className="flex items-center gap-1"><CheckCircle2 size={10} className="text-emerald-500"/> Node: Sync</span>
+                  <span className="flex items-center gap-1"><CheckCircle2 size={10} className="text-emerald-500"/> Node: Sinxron</span>
                 </div>
               </div>
             </div>
@@ -909,7 +872,7 @@ export default function App() {
           <div className="p-4 border-b border-white/5 flex items-center justify-between bg-black/20">
             <div className="flex items-center gap-2">
               <History className="text-purple-400 w-5 h-5" />
-              <h2 className="text-sm font-semibold text-white">Transaction History (Real-Time)</h2>
+              <h2 className="text-sm font-semibold text-white">Tranzaksiya Tarixçəsi (Real-Time)</h2>
             </div>
             <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-1 rounded-md border border-purple-500/20">
               Total: {stats.tradesCount}
@@ -925,14 +888,14 @@ export default function App() {
                   <th className="p-3 font-medium">Market Route</th>
                   <th className="p-3 font-medium">Spread</th>
                   <th className="p-3 font-medium">Trade Size</th>
-                  <th className="p-3 font-medium">Profit</th>
+                  <th className="p-3 font-medium">Qazanc</th>
                   <th className="p-3 font-medium text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="text-xs divide-y divide-white/5">
                 {history.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="p-8 text-center text-gray-600">System awaiting activation. No transactions yet.</td>
+                    <td colSpan="7" className="p-8 text-center text-gray-600">Sistem aktivasiya gözləyir. Hələ heç bir əməliyyat yoxdur.</td>
                   </tr>
                 ) : (
                   history.slice(0, 15).map((trade, idx) => (
@@ -953,7 +916,7 @@ export default function App() {
             <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-white/[0.02]">
               <div className="flex items-center gap-2">
                 <Shield className="text-emerald-400 w-5 h-5" />
-                <h3 className="font-semibold text-white">Smart Contract Execution</h3>
+                <h3 className="font-semibold text-white">Smart Contract İcrası</h3>
               </div>
               <button onClick={() => setManualModal({isOpen: false, opp: null, step: 0})} className="text-gray-500 hover:text-white transition-colors" disabled={manualModal.step > 0 && manualModal.step < 5}>✕</button>
             </div>
@@ -961,7 +924,7 @@ export default function App() {
               <div className="flex items-center gap-3 bg-black/40 p-3 rounded-xl border border-white/5 mb-2">
                  <CryptoLogo asset={manualModal.opp.asset} className="w-8 h-8" />
                  <div>
-                    <div className="text-sm font-bold text-white">{manualModal.opp.asset}/USDT Arbitrage</div>
+                    <div className="text-sm font-bold text-white">{manualModal.opp.asset}/USDT Arbitrajı</div>
                     <div className="text-[10px] text-gray-400">{manualModal.opp.route.join(' → ')}</div>
                  </div>
               </div>
@@ -970,16 +933,16 @@ export default function App() {
                 <ModalDetail label="Execution Hash" value={generateShortHash()} />
                 <ModalDetail label="Trade Size (Flash Loan)" value={formatMoney(manualModal.opp.estTradeSize)} />
                 <ModalDetail label="Real Spread" value={`${formatNum(manualModal.opp.spread, 3)}%`} valueColor="text-emerald-400" />
-                <ModalDetail label="Max Expected Profit" value={`+${formatMoney(Math.min(manualModal.opp.estProfit, TARGET_PROFIT - totalProfit))}`} valueColor="text-emerald-400 font-bold" />
+                <ModalDetail label="Maks. Gözlənilən Qazanc" value={`+${formatMoney(Math.min(manualModal.opp.estProfit, TARGET_PROFIT - totalProfit))}`} valueColor="text-emerald-400 font-bold" />
                 <ModalDetail label="AI Confidence" value={`${formatNum(manualModal.opp.confidence)}%`} valueColor="text-emerald-400" />
                 <ModalDetail label="Buy Price (Low)" value={formatNum(manualModal.opp.buyPrice, manualModal.opp.asset === 'TRX' ? 4 : 2)} />
                 <ModalDetail label="Sell Price (High)" value={formatNum(manualModal.opp.sellPrice, manualModal.opp.asset === 'TRX' ? 4 : 2)} />
               </div>
               <div className="bg-black/40 border border-gray-800 rounded-xl p-4 mt-2">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-gray-400">Transaction Status</span>
+                  <span className="text-xs text-gray-400">Tranzaksiya Statusu</span>
                   <span className="text-[10px] text-gray-500 font-mono">
-                    {manualModal.step === 0 ? 'Pending' : manualModal.step === 1 ? 'Signing...' : manualModal.step === 2 ? 'Validating...' : manualModal.step === 3 ? 'Block Conf...' : manualModal.step === 4 ? 'Settlement...' : 'Completed'}
+                    {manualModal.step === 0 ? 'Gözləyir' : manualModal.step === 1 ? 'İmzalanır...' : manualModal.step === 2 ? 'Validasiya...' : manualModal.step === 3 ? 'Blok Təsdiqi...' : manualModal.step === 4 ? 'Hesablaşma...' : 'Tamamlandı'}
                   </span>
                 </div>
                 <div className="h-1.5 bg-gray-900 rounded-full overflow-hidden flex">
@@ -991,10 +954,10 @@ export default function App() {
               </div>
             </div>
             <div className="p-4 border-t border-gray-800 bg-black/40 flex justify-end gap-3">
-              <button onClick={() => setManualModal({isOpen: false, opp: null, step: 0})} disabled={manualModal.step > 0 && manualModal.step < 5} className="px-4 py-2 text-xs text-gray-400 hover:text-white transition-colors">Cancel</button>
+              <button onClick={() => setManualModal({isOpen: false, opp: null, step: 0})} disabled={manualModal.step > 0 && manualModal.step < 5} className="px-4 py-2 text-xs text-gray-400 hover:text-white transition-colors">Ləğv et</button>
               <button onClick={processManualSignature} disabled={manualModal.step > 0} className={`px-5 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all ${manualModal.step === 5 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' : manualModal.step > 0 ? 'bg-blue-500 text-white cursor-wait opacity-80' : 'bg-white text-black hover:bg-gray-200 shadow-[0_0_15px_rgba(255,255,255,0.2)]'}`}>
                 {manualModal.step === 5 ? <CheckCircle2 size={14}/> : manualModal.step > 0 ? <Activity size={14} className="animate-spin" /> : <Fingerprint size={14} />}
-                {manualModal.step === 5 ? 'Completed' : manualModal.step > 0 ? 'Executing...' : 'Sign & Execute'}
+                {manualModal.step === 5 ? 'Tamamlandı' : manualModal.step > 0 ? 'İcra Edilir...' : 'İmzalama & İcra Et'}
               </button>
             </div>
           </div>
@@ -1008,11 +971,11 @@ export default function App() {
               <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
                  <AlertTriangle size={32} />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Reset System?</h3>
-              <p className="text-sm text-gray-400 mb-6">All current profit, statistics, timers, and history will be permanently deleted and the balance will return to its initial state (306,006.71 USDT). Do you want to continue?</p>
+              <h3 className="text-xl font-bold text-white mb-2">Sistemi Sıfırla?</h3>
+              <p className="text-sm text-gray-400 mb-6">Bütün mövcud qazanc, statistika, taymer və tarixçə qalıcı olaraq silinəcək və balans başlanğıc vəziyyətinə (50,000.00 USDT) qayıdacaq. Davam etmək istəyirsiniz?</p>
               <div className="flex gap-3">
-                 <button onClick={() => setResetModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:bg-white/5 transition-all">Cancel</button>
-                 <button onClick={resetSystem} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]">Yes, Reset</button>
+                 <button onClick={() => setResetModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:bg-white/5 transition-all">Ləğv et</button>
+                 <button onClick={resetSystem} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-medium hover:bg-red-600 transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)]">Bəli, Sıfırla</button>
               </div>
            </div>
         </div>
