@@ -664,7 +664,7 @@ export default function App() {
             </div>
             <div>
               <div className="text-gray-500 text-[10px] tracking-widest uppercase mb-0.5">Scheduled Execution Window</div>
-              <div className="text-gray-300">Trading engine activation: <span className="text-blue-400 font-semibold">13/07/2026 — 18:00</span></div>
+              <div className="text-gray-300">Trading engine activation: <span className="text-blue-400 font-semibold">21/07/2026 — 18:00</span></div>
             </div>
           </div>
           <div className="flex items-center gap-2 bg-white/[0.02] px-3 py-1.5 rounded border border-white/5">
