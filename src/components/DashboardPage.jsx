@@ -10,7 +10,7 @@ import {
 // --- Sabitlər və Hədəflər ---
 const SIMULATION_DURATION = 24 * 60 * 60 * 1000; // 24 saat (ms)
 const INITIAL_BALANCE = 50000.00;
-const TARGET_PROFIT = 49627.00;
+const TARGET_PROFIT = 53457.85; // 49,657.55 ilə 56,755.54 aralığında
 const MAX_BALANCE = INITIAL_BALANCE + TARGET_PROFIT;
 
 const ASSETS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'AVAX', 'LINK', 'DOT', 'TRX'];
@@ -204,10 +204,18 @@ const HistoryRow = memo(({ trade, idx }) => {
 export default function App() {
   const isInitialized = useRef(false);
 
+  const SCHEDULED_START_TIME = new Date('2026-07-22T18:00:00').getTime();
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  useEffect(() => {
+     const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
+     return () => clearInterval(timer);
+  }, []);
+  const isBeforeSchedule = currentTime < SCHEDULED_START_TIME;
+
   // --- SİSTEM VƏZİYYƏTİ VƏ TAYMER STATE-LƏRİ ---
   const [accumulatedTime, setAccumulatedTime] = useState(0); 
-  const [lastStartedAt, setLastStartedAt] = useState(() => Date.now());  
-  const [isRunning, setIsRunning] = useState(true);
+  const [lastStartedAt, setLastStartedAt] = useState(null);  
+  const [isRunning, setIsRunning] = useState(false);
   const [isTargetReached, setIsTargetReached] = useState(false);
   const [apiConnected, setApiConnected] = useState(false);
   
@@ -272,7 +280,7 @@ export default function App() {
           let running = parsed.isRunning || false;
           
           // Offline vaxtı aktiv hesab etmək (əgər açıq qalıbsa)
-          if (running && parsed.lastStartedAt && !isDone) {
+          if (running && parsed.lastStartedAt && !isDone && !isBeforeSchedule) {
              const offlinePassed = Date.now() - parsed.lastStartedAt;
              accTime += offlinePassed;
              if (accTime >= SIMULATION_DURATION) {
@@ -286,8 +294,8 @@ export default function App() {
           setAccumulatedTime(accTime);
           setTotalProfit(profit);
           setIsTargetReached(isDone);
-          setIsRunning(running && !isDone);
-          setLastStartedAt(running && !isDone ? Date.now() : null);
+          setIsRunning(running && !isDone && !isBeforeSchedule);
+          setLastStartedAt((running && !isDone && !isBeforeSchedule) ? Date.now() : null);
           
           if (parsed.history) setHistory(parsed.history);
           if (parsed.stats) setStats(parsed.stats);
@@ -296,11 +304,11 @@ export default function App() {
           addLog('Sistem bərpa edildi. Real məlumatlar sinxronlaşdırılır...', 'info');
         } catch(e) { console.error('LocalStorage parse error', e); }
       } else {
-        addLog('Sistem hazır vəziyyətdədir. Mühərrik avtomatik işə düşdü.', 'info');
+        addLog(isBeforeSchedule ? 'Sistem hazır vəziyyətdədir. Planlaşdırılmış vaxtı gözləyir.' : 'Sistem hazır vəziyyətdədir. Mühərrik işə düşməyə hazırdır.', 'info');
       }
       isInitialized.current = true;
     }
-  }, [addLog]);
+  }, [addLog, isBeforeSchedule]);
 
   useEffect(() => {
     if (isInitialized.current) {
@@ -320,7 +328,7 @@ export default function App() {
     setAccumulatedTime(SIMULATION_DURATION);
     setLastStartedAt(null);
     setTotalProfit(TARGET_PROFIT);
-    addLog(`24 SAATLIQ HƏDƏF TAMAMLANDI — Ümumi qazanc: 49,627.00 USDT | Yekun balans: 99,627.00 USDT`, 'warning');
+    addLog(`24 SAATLIQ HƏDƏF TAMAMLANDI — Ümumi qazanc: ${formatNum(TARGET_PROFIT, 2)} USDT | Yekun balans: ${formatNum(MAX_BALANCE, 2)} USDT`, 'warning');
   }, [addLog]);
 
   // --- VAxt NƏZARƏTÇİSİ (Hər Saniyə) ---
@@ -474,7 +482,7 @@ export default function App() {
 
     const runCycle = async () => {
       const { isRunning, isTargetReached, accumulatedTime, lastStartedAt, totalProfit } = stateRef.current;
-      if (!isActive || !isRunning || isTargetReached || opportunities.length === 0) return;
+      if (!isActive || !isRunning || isTargetReached || opportunities.length === 0 || isBeforeSchedule) return;
 
       const currentActive = accumulatedTime + (Date.now() - lastStartedAt);
       const progressRatio = Math.min(currentActive / SIMULATION_DURATION, 1);
@@ -537,7 +545,7 @@ export default function App() {
 
   // --- BUTTON HANDLERS ---
   const toggleRunning = () => {
-     if (isTargetReached) return;
+     if (isTargetReached || isBeforeSchedule) return;
      if (isRunning) {
         setAccumulatedTime(prev => prev + (Date.now() - lastStartedAt));
         setLastStartedAt(null);
@@ -553,13 +561,13 @@ export default function App() {
   const resetSystem = () => {
      localStorage.removeItem('quantumArbState_v4');
      setAccumulatedTime(0);
-     setLastStartedAt(Date.now());
-     setIsRunning(true);
+     setLastStartedAt(isBeforeSchedule ? null : Date.now());
+     setIsRunning(!isBeforeSchedule);
      setIsTargetReached(false);
      setTotalProfit(0);
      setHistory([]);
      setStats({ tradesCount: 0, winRate: 100, avgSpread: 0.32, avgProfit: 0, bestTrade: 0, largestVolume: 0, executionSpeed: 450, latency: 12, aiConfidence: 98.2, cpuLoad: 24, memory: 45, gas: 15 });
-     setLogs([{ id: 1, time: new Date(), text: 'Sistem tam sıfırlandı. Mühərrik avtomatik işə düşür...', type: 'info' }]);
+     setLogs([{ id: 1, time: new Date(), text: 'Sistem tam sıfırlandı. Yeni mühit hazırlanır...', type: 'info' }]);
      setResetModalOpen(false);
   };
 
@@ -639,19 +647,21 @@ export default function App() {
             </div>
             <button 
               onClick={toggleRunning}
-              disabled={isTargetReached || !hasData}
+              disabled={isTargetReached || !hasData || isBeforeSchedule}
               className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl font-medium transition-all duration-300 shadow-lg ${
                 isTargetReached 
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                  : isRunning 
-                    ? 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20' 
-                    : !hasData 
-                      ? 'bg-emerald-900/50 text-emerald-700 cursor-wait'
-                      : 'bg-emerald-500 text-black hover:bg-emerald-400 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]'
+                  : isBeforeSchedule
+                    ? 'bg-blue-900/50 text-blue-500 cursor-not-allowed border border-blue-500/20'
+                    : isRunning 
+                      ? 'bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20' 
+                      : !hasData 
+                        ? 'bg-emerald-900/50 text-emerald-700 cursor-wait'
+                        : 'bg-emerald-500 text-black hover:bg-emerald-400 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]'
               }`}
             >
-              {isTargetReached ? <CheckCircle2 size={18} /> : isRunning ? <StopCircle size={18} /> : <Play size={18} />}
-              {isTargetReached ? '24 SAAT TAMAMLANDI' : isRunning ? 'Sistemi Dayandır' : !hasData ? 'Yüklənir...' : 'Avto Start'}
+              {isTargetReached ? <CheckCircle2 size={18} /> : isBeforeSchedule ? <Clock size={18} /> : isRunning ? <StopCircle size={18} /> : <Play size={18} />}
+              {isTargetReached ? '24 SAAT TAMAMLANDI' : isBeforeSchedule ? 'Gözləmə Rejimi' : isRunning ? 'Sistemi Dayandır' : !hasData ? 'Yüklənir...' : 'Avto Start'}
             </button>
           </div>
         </header>
@@ -664,16 +674,27 @@ export default function App() {
             </div>
             <div>
               <div className="text-gray-500 text-[10px] tracking-widest uppercase mb-0.5">Scheduled Execution Window</div>
-              <div className="text-gray-300">Trading engine activation: <span className="text-blue-400 font-semibold">21/07/2026 — 18:00</span></div>
+              <div className="text-gray-300">Trading engine activation: <span className="text-blue-400 font-semibold">22/07/2026 — 18:00</span></div>
             </div>
           </div>
           <div className="flex items-center gap-2 bg-white/[0.02] px-3 py-1.5 rounded border border-white/5">
              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                {isBeforeSchedule ? (
+                  <>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                  </>
+                ) : (
+                  <>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </>
+                )}
              </span>
              <span className="text-gray-400">System status:</span>
-             <span className="text-blue-400">Awaiting scheduled initialization</span>
+             <span className={isBeforeSchedule ? "text-blue-400" : "text-emerald-400"}>
+                {isBeforeSchedule ? 'Awaiting scheduled initialization' : 'System Active'}
+             </span>
           </div>
         </div>
 
@@ -700,7 +721,7 @@ export default function App() {
               <div className="flex items-center gap-2 mb-4">
                 <Cpu className="text-emerald-500 w-5 h-5" />
                 <h2 className="text-sm font-semibold text-white">AI Real-Time Mühərriki</h2>
-                {isRunning && <span className="ml-auto flex h-2 w-2 relative">
+                {isRunning && !isBeforeSchedule && <span className="ml-auto flex h-2 w-2 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>}
@@ -781,7 +802,7 @@ export default function App() {
                           </div>
                           <button 
                             onClick={() => handleManualExecute(opp)}
-                            disabled={isRunning || isTargetReached}
+                            disabled={isRunning || isTargetReached || isBeforeSchedule}
                             className="w-full sm:w-auto px-4 py-2 bg-white/5 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg border border-white/10 hover:border-emerald-500/50 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1 whitespace-nowrap"
                           >
                             <PenTool size={12} /> Manual İcra
