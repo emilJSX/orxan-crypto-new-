@@ -211,6 +211,10 @@ export default function App() {
      return () => clearInterval(timer);
   }, []);
   const isBeforeSchedule = currentTime < SCHEDULED_START_TIME;
+  
+  // Dəyəri funksiyaların içində ani oxumaq üçün Ref
+  const isBeforeScheduleRef = useRef(isBeforeSchedule);
+  useEffect(() => { isBeforeScheduleRef.current = isBeforeSchedule; }, [isBeforeSchedule]);
 
   // --- SİSTEM VƏZİYYƏTİ VƏ TAYMER STATE-LƏRİ ---
   const [accumulatedTime, setAccumulatedTime] = useState(0); 
@@ -279,8 +283,16 @@ export default function App() {
           let profit = parsed.totalProfit || 0;
           let running = parsed.isRunning || false;
           
-          // Offline vaxtı aktiv hesab etmək (əgər açıq qalıbsa)
-          if (running && parsed.lastStartedAt && !isDone && !isBeforeSchedule) {
+          // Əgər vaxt 22 İyuldan əvvəldirsə, bütün qazanc və tarixçəni blokla və mütləq sıfırla
+          if (isBeforeSchedule) {
+             accTime = 0;
+             isDone = false;
+             profit = 0;
+             running = false;
+             parsed.history = [];
+             parsed.stats = { tradesCount: 0, winRate: 100, avgSpread: 0.32, avgProfit: 0, bestTrade: 0, largestVolume: 0, executionSpeed: 450, latency: 12, aiConfidence: 98.2, cpuLoad: 24, memory: 45, gas: 15 };
+          } else if (running && parsed.lastStartedAt && !isDone) {
+             // Offline vaxtı aktiv hesab etmək (əgər açıq qalıbsa)
              const offlinePassed = Date.now() - parsed.lastStartedAt;
              accTime += offlinePassed;
              if (accTime >= SIMULATION_DURATION) {
@@ -294,8 +306,8 @@ export default function App() {
           setAccumulatedTime(accTime);
           setTotalProfit(profit);
           setIsTargetReached(isDone);
-          setIsRunning(running && !isDone && !isBeforeSchedule);
-          setLastStartedAt((running && !isDone && !isBeforeSchedule) ? Date.now() : null);
+          setIsRunning(running && !isDone);
+          setLastStartedAt((running && !isDone) ? Date.now() : null);
           
           if (parsed.history) setHistory(parsed.history);
           if (parsed.stats) setStats(parsed.stats);
@@ -437,7 +449,9 @@ export default function App() {
   // --- TRADING LOGIC (24H TRAJECTORY ENFORCED) ---
   const executeTrade = useCallback((manualOpp = null, source = 'AI Smart Routing', profitGap = null) => {
     const { isTargetReached, totalProfit } = stateRef.current;
-    if (isTargetReached) return;
+    
+    // Qəti təhlükəsizlik bloku: Vaxtı çatmayıbsa və ya hədəf dolubsa heç bir ticarət etmə
+    if (isTargetReached || isBeforeScheduleRef.current) return;
 
     const opp = manualOpp || opportunities[0];
     if (!opp) return;
